@@ -3,7 +3,26 @@ import { stats, timer } from "./betokenjs/helpers.js"
 import { loadMetadata, loadFundData, loadTokenPrices, loadStats } from "./betokenjs/data-controller.js"
 https = require "https"
 
-loadData = () =>
+callAPI = (apiStr) ->
+    return (await (new Promise((resolve, reject) ->
+        https.get(apiStr, (res) ->
+            rawData = ""
+            res.on("data", (chunk) ->
+                rawData += chunk
+            )
+            res.on("end", () ->
+                parsedData = JSON.parse(rawData)
+                resolve(parsedData)
+            )
+        ).on("error", reject)
+    )))
+
+getCoinPriceAtTime = (coin, time) ->
+    apiStr = "https://min-api.cryptocompare.com/data/pricehistorical?fsym=DAI&tsyms=#{coin}&ts=#{time}"
+    price = 1 / (await callAPI(apiStr)).DAI[coin]
+    return price
+
+loadData = () ->
     # init betoken object
     window.betoken = new Betoken()
     await window.betoken.init()
@@ -15,7 +34,7 @@ loadData = () =>
     await loadStats()
 
 
-getROI = () =>
+getROI = () ->
     await loadData()
 
     # get betoken ROI and time range
@@ -52,18 +71,7 @@ getROI = () =>
 
     # get BLX ROI in the given time range
     apiStr = "https://api.iconomi.net/v1/daa/BLX/pricehistory"
-    prices = (await (new Promise((resolve, reject) ->
-        https.get(apiStr, (res) ->
-            rawData = ""
-            res.on("data", (chunk) ->
-                rawData += chunk
-            )
-            res.on("end", () ->
-                parsedData = JSON.parse(rawData)
-                resolve(parsedData)
-            )
-        ).on("error", reject)
-    ))).values
+    prices = (await callAPI(apiStr)).values
     # find price near start timestamp
     blxStartPrice = 0.0
     i = 0
@@ -84,10 +92,20 @@ getROI = () =>
         i -= 1
     blxROI = (blxEndPrice - blxStartPrice) / blxStartPrice * 100
 
+    btcStartPrice = await getCoinPriceAtTime("BTC", startTimestamp)
+    btcEndPrice = await getCoinPriceAtTime("BTC", endTimestamp)
+    btcROI = (btcEndPrice - btcStartPrice) / btcStartPrice * 100
+
+    ethStartPrice = await getCoinPriceAtTime("ETH", startTimestamp)
+    ethEndPrice = await getCoinPriceAtTime("ETH", endTimestamp)
+    ethROI = (ethEndPrice - ethStartPrice) / ethStartPrice * 100
+
     result = {
         ROI: {
             betoken: betokenROI
             blx: blxROI
+            btc: btcROI
+            eth: ethROI
         }
         timestamp: {
             start: startTimestamp
