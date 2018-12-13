@@ -47,6 +47,16 @@ $(document).ready(() => {
                 },
                 legend: {
                     display: false
+                },
+                tooltips: {
+                    enabled: true,
+                    mode: 'single',
+                    displayColors: false,
+                    callbacks: {
+                        label: function(tooltipItems, data) { 
+                            return tooltipItems.yLabel + '%';
+                        }
+                    }
                 }
             }
         });
