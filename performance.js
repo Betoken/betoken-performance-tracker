@@ -24,11 +24,15 @@ loadData = async() => {
   window.betoken = new Betoken();
   await window.betoken.init();
   // load stats data from betoken
-  return (await loadMetadata.then(loadFundData).then(loadTokenPrices).then(loadStats));
+  await loadMetadata(); //.then(loadFundData).then(loadTokenPrices).then(loadStats)
+  await loadFundData();
+  await loadTokenPrices();
+  return (await loadStats());
 };
 
 getROI = async() => {
-  var apiStr, betokenROI, blxEndPrice, blxROI, blxStartPrice, endTimestamp, i, now, phase, phaseLengths, phaseStart, prices, rawROIs, startTimestamp, timestamp;
+  var apiStr, betokenROI, blxEndPrice, blxROI, blxStartPrice, endTimestamp, i, now, phase, phaseLengths, phaseStart, prices, rawROIs, result, startTimestamp, timestamp;
+  await loadData();
   // get betoken ROI and time range
   phase = timer.phase();
   rawROIs = stats.raw_roi_data();
@@ -61,6 +65,7 @@ getROI = async() => {
       startTimestamp = phaseStart - phaseLengths[1];
       endTimestamp = phaseStart;
   }
+  betokenROI = betokenROI.toNumber();
   // get BLX ROI in the given time range
   apiStr = "https://api.iconomi.net/v1/daa/BLX/pricehistory";
   prices = ((await (new Promise(function(resolve, reject) {
@@ -84,6 +89,7 @@ getROI = async() => {
     timestamp = prices[i].x;
     if (timestamp >= startTimestamp) {
       blxStartPrice = prices[i].y;
+      break;
     }
     i += 1;
   }
@@ -92,11 +98,26 @@ getROI = async() => {
   i = prices.length - 1;
   while (i >= 0) {
     timestamp = prices[i].x;
-    if (timestamp <= startTimestamp) {
+    if (timestamp <= endTimestamp) {
       blxEndPrice = prices[i].y;
+      break;
     }
     i -= 1;
   }
-  blxROI = (blxEndPrice - blxStartPrice) / blxStartPrice;
-  return [betokenROI, blxROI, startTimestamp, endTimestamp];
+  blxROI = (blxEndPrice - blxStartPrice) / blxStartPrice * 100;
+  result = {
+    ROI: {
+      betoken: betokenROI,
+      blx: blxROI
+    },
+    timestamp: {
+      start: startTimestamp,
+      end: endTimestamp
+    }
+  };
+  return result;
 };
+
+window.loadData = loadData;
+
+window.getROI = getROI;

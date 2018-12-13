@@ -1,5 +1,4 @@
 // imports
-import BigNumber from "bignumber.js";
 const Web3 = require('web3');
 
 // constants
@@ -8,10 +7,6 @@ export const ETH_TOKEN_ADDRESS = "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee";
 export const NET_ID = 4; // Rinkeby
 
 // helpers
-export var getDefaultAccount = async () => {
-    web3.eth.defaultAccount = (await web3.eth.getAccounts())[0];
-};
-
 export var ERC20 = function(_tokenAddr) {
     // add new token contract
     var erc20ABI = require("./abi/ERC20.json");
@@ -206,143 +201,5 @@ export var Betoken = function() {
             return array;
         });
     };
-    
-    
-    /*
-    Phase handler
-    */
-    /**
-    * Ends the current phase
-    * @return {Promise} .then(()->)
-    */
-    self.nextPhase = async function(_onTxHash, _onReceipt) {
-        await getDefaultAccount();
-        return self.contracts.BetokenFund.methods.nextPhase().send({
-            from: web3.eth.defaultAccount
-        }).on("transactionHash", _onTxHash).on("receipt", _onReceipt);
-    };
-    
-    
-    /*
-    Invest & Withdraw phase functions
-    */
-    /**
-    * Allows user to deposit into the fund
-    * @param  {String} _tokenAddr the token address
-    * @param  {BigNumber} _tokenAmount the deposit token amount
-    * @return {Promise}               .then(()->)
-    */
-    self.depositToken = async function(_tokenAddr, _tokenAmount, _onTxHash, _onReceipt) {
-        await getDefaultAccount();
-        var token = ERC20(_tokenAddr);
-        var amount = BigNumber(_tokenAmount).mul(BigNumber(10).toPower(self.getTokenDecimals(_tokenAddr)));
-        
-        token.methods.approve(self.contracts.BetokenFund.options.address, 0).send({
-            from: web3.eth.defaultAccount
-        });
-        
-        token.methods.approve(self.contracts.BetokenFund.options.address, amount).send({
-            from: web3.eth.defaultAccount
-        });
-        
-        return self.contracts.BetokenFund.methods.depositToken(_tokenAddr, amount).send({
-            from: web3.eth.defaultAccount
-        }).on("transactionHash", _onTxHash).on("receipt", _onReceipt);
-    };
-    
-    /**
-    * Allows user to withdraw from fund balance
-    * @param  {String} _tokenAddr the token address
-    * @param  {BigNumber} _amountInDAI the withdrawal amount in DAI
-    * @return {Promise}               .then(()->)
-    */
-    self.withdrawToken = async function(_tokenAddr, _amountInDAI, _onTxHash, _onReceipt) {
-        await getDefaultAccount();
-        var amount = BigNumber(_amountInDAI).mul(1e18);
-        return self.contracts.BetokenFund.methods.withdrawToken(_tokenAddr, amount).send({
-            from: web3.eth.defaultAccount
-        }).on("transactionHash", _onTxHash).on("receipt", _onReceipt);
-    };
-    
-    /**
-    * Withdraws all of user's balance in cases of emergency
-    * @return {Promise}           .then(()->)
-    */
-    self.emergencyWithdraw = async function(_onTxHash, _onReceipt) {
-        await getDefaultAccount();
-        return self.contracts.BetokenFund.methods.emergencyWithdraw().send({
-            from: web3.eth.defaultAccount
-        }).on("transactionHash", _onTxHash).on("receipt", _onReceipt);
-    };
-    
-    /**
-    * Sends Kairo to another address
-    * @param  {String} _to           the recipient address
-    * @param  {BigNumber} _amountInWeis the amount
-    * @return {Promise}               .then(()->)
-    */
-    self.sendKairo = async function(_to, _amountInWeis, _onTxHash, _onReceipt) {
-        await getDefaultAccount();
-        return self.contracts.Kairo.methods.transfer(_to, _amountInWeis).send({
-            from: web3.eth.defaultAccount
-        }).on("transactionHash", _onTxHash).on("receipt", _onReceipt);
-    };
-    
-    /**
-    * Sends Shares to another address
-    * @param  {String} _to           the recipient address
-    * @param  {BigNumber} _amountInWeis the amount
-    * @return {Promise}               .then(()->)
-    */
-    self.sendShares = async function(_to, _amountInWeis, _onTxHash, _onReceipt) {
-        await getDefaultAccount();
-        return self.contracts.Shares.methods.transfer(_to, _amountInWeis).send({
-            from: web3.eth.defaultAccount
-        }).on("transactionHash", _onTxHash).on("receipt", _onReceipt);
-    };
-    
-    
-    /*
-    Decision Making phase functions
-    */
-    
-    /**
-    * Creates proposal
-    * @param  {String} _tokenAddress the token address
-    * @param  {BigNumber} _stakeInWeis the investment amount
-    * @return {Promise}               .then(()->)
-    */
-    self.createInvestment = async function(_tokenAddress, _stakeInWeis, _onTxHash, _onReceipt) {
-        await getDefaultAccount();
-        return self.contracts.BetokenFund.methods.createInvestment(_tokenAddress, _stakeInWeis).send({
-            from: web3.eth.defaultAccount
-        }).on("transactionHash", _onTxHash).on("receipt", _onReceipt);
-    };
-    
-    self.sellAsset = async function(_proposalId, _onTxHash, _onReceipt) {
-        await getDefaultAccount();
-        return self.contracts.BetokenFund.methods.sellInvestmentAsset(_proposalId).send({
-            from: web3.eth.defaultAccount
-        }).on("transactionHash", _onTxHash).on("receipt", _onReceipt);
-    };
-    
-    
-    /*
-    Redeem Commission phase functions
-    */
-    self.redeemCommission = async function(_onTxHash, _onReceipt) {
-        await getDefaultAccount();
-        return self.contracts.BetokenFund.methods.redeemCommission().send({
-            from: web3.eth.defaultAccount
-        }).on("transactionHash", _onTxHash).on("receipt", _onReceipt);
-    };
-    
-    self.redeemCommissionInShares = async function(_onTxHash, _onReceipt) {
-        await getDefaultAccount();
-        return self.contracts.BetokenFund.methods.redeemCommissionInShares().send({
-            from: web3.eth.defaultAccount
-        }).on("transactionHash", _onTxHash).on("receipt", _onReceipt);
-    };
-    
     return self;
 };

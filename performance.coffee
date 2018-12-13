@@ -9,10 +9,15 @@ loadData = () =>
     await window.betoken.init()
 
     # load stats data from betoken
-    await loadMetadata.then(loadFundData).then(loadTokenPrices).then(loadStats)
+    await loadMetadata()#.then(loadFundData).then(loadTokenPrices).then(loadStats)
+    await loadFundData()
+    await loadTokenPrices()
+    await loadStats()
 
 
 getROI = () =>
+    await loadData()
+
     # get betoken ROI and time range
     phase = timer.phase()
     rawROIs = stats.raw_roi_data()
@@ -43,6 +48,7 @@ getROI = () =>
             betokenROI = stats.cycle_roi()
             startTimestamp = phaseStart - phaseLengths[1]
             endTimestamp = phaseStart
+    betokenROI = betokenROI.toNumber()
 
     # get BLX ROI in the given time range
     apiStr = "https://api.iconomi.net/v1/daa/BLX/pricehistory"
@@ -65,16 +71,31 @@ getROI = () =>
         timestamp = prices[i].x
         if timestamp >= startTimestamp
             blxStartPrice = prices[i].y
+            break
         i += 1
     # find price near end timestamp
     blxEndPrice = 0.0
     i = prices.length - 1
     while i >= 0
         timestamp = prices[i].x
-        if timestamp <= startTimestamp
+        if timestamp <= endTimestamp
             blxEndPrice = prices[i].y
+            break
         i -= 1
-    blxROI = (blxEndPrice - blxStartPrice) / blxStartPrice
+    blxROI = (blxEndPrice - blxStartPrice) / blxStartPrice * 100
 
-    return [betokenROI, blxROI, startTimestamp, endTimestamp]
+    result = {
+        ROI: {
+            betoken: betokenROI
+            blx: blxROI
+        }
+        timestamp: {
+            start: startTimestamp
+            end: endTimestamp
+        }
+    }
 
+    return result
+
+window.loadData = loadData
+window.getROI = getROI
