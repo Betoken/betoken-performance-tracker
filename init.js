@@ -1,28 +1,38 @@
 $(document).ready(() => {
     window.getROI().then((result) => {
-        console.log(result);
+        var timestamps = [];
+        for (var i = 0; i < result.timestamps.length; i++) {
+            timestamps.push(new Date(result.timestamps[i].start * 1e3).toLocaleDateString() + ' to ' + new Date(result.timestamps[i].end * 1e3).toLocaleDateString());
+        }
+        var xLabels = [];
+        for (var i = 0; i < result.timestamps.length; i++) {
+            xLabels.push(new Date(result.timestamps[i].start * 1e3).toLocaleDateString());
+        }
         var ctx = document.getElementById("performance-chart").getContext('2d');
         var performanceChart = new Chart(ctx, {
-            type: 'bar',
+            type: 'line',
             data: {
-                labels: ["Betoken", "Blockchain Index", "Bitcoin", "Ethereum"],
-                datasets: [{
-                    label: 'Return on investment',
-                    data: [result.ROI.betoken, result.ROI.blx, result.ROI.btc, result.ROI.eth],
-                    backgroundColor: [
-                        'rgba(255, 99, 132, 0.2)',
-                        'rgba(54, 162, 235, 0.2)',
-                        'rgba(255, 206, 86, 0.2)',
-                        'rgba(75, 192, 192, 0.2)'
-                    ],
-                    borderColor: [
-                        'rgba(255,99,132,1)',
-                        'rgba(54, 162, 235, 1)',
-                        'rgba(255, 206, 86, 1)',
-                        'rgba(75, 192, 192, 1)'
-                    ],
-                    borderWidth: 1
-                }]
+                labels: xLabels,
+                datasets: [
+                    {
+                        label: 'Betoken',
+                        borderColor: '#22c88a',
+                        fill: false,
+                        data: result.ROI.betoken
+                    },
+                    {
+                        label: 'Bitcoin',
+                        borderColor: '#ff9500',
+                        fill: false,
+                        data: result.ROI.btc
+                    },
+                    {
+                        label: 'Ethereum',
+                        borderColor: '#497a9a',
+                        fill: false,
+                        data: result.ROI.eth
+                    }
+                ]
             },
             options: {
                 scales: {
@@ -35,26 +45,24 @@ $(document).ready(() => {
                         gridLines: {
                             display: true
                         },
-                        scaleLabel: {
-                            display: true,
-                            labelString: `ROI (%) from ${new Date(result.timestamp.start * 1e3).toLocaleString()} to ${new Date(result.timestamp.end * 1e3).toLocaleString()}`
-                        } 
+                        
                     }]
                 },
                 title: {
                     display: true,
                     text: 'Return on investment comparison'
                 },
-                legend: {
-                    display: false
-                },
                 tooltips: {
                     enabled: true,
-                    mode: 'single',
-                    displayColors: false,
+                    mode: 'index',
+					intersect: false,
+                    displayColors: true,
                     callbacks: {
                         label: function(tooltipItems, data) { 
                             return tooltipItems.yLabel + '%';
+                        },
+                        title: function(tooltipItems, data) { 
+                            return timestamps[tooltipItems[0].index];
                         }
                     }
                 }

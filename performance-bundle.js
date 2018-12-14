@@ -44443,7 +44443,7 @@ function () {
   var _ref4 = (0, _asyncToGenerator2.default)(
   /*#__PURE__*/
   _regenerator.default.mark(function _callee4() {
-    var apiStr, betokenROI, blxEndPrice, blxROI, blxStartPrice, btcEndPrice, btcROI, btcStartPrice, endTimestamp, ethEndPrice, ethROI, ethStartPrice, i, now, phase, phaseLengths, phaseStart, prices, rawROIs, result, startTimestamp, timestamp;
+    var betokenROIList, btcEndPrice, btcROI, btcROIList, btcStartPrice, ethEndPrice, ethROI, ethROIList, ethStartPrice, i, j, k, l, len, len1, now, phase, phaseLengths, phaseStart, rawROIs, ref, result, timestamps, x;
     return _regenerator.default.wrap(function _callee4$(_context4) {
       while (1) {
         switch (_context4.prev = _context4.next) {
@@ -44458,136 +44458,157 @@ function () {
             now = Math.floor(new Date().getTime() / 1000);
             phaseStart = _helpers.timer.phase_start_time();
             phaseLengths = _helpers.timer.phase_lengths();
-            betokenROI = 0;
-            blxROI = 0;
-            startTimestamp = 0;
-            endTimestamp = 0;
+
+            betokenROIList = function () {
+              var j, ref, results;
+              results = [];
+
+              for (i = j = 0, ref = rawROIs.length - 1; 0 <= ref ? j <= ref : j >= ref; i = 0 <= ref ? ++j : --j) {
+                results.push({
+                  roi: rawROIs[i][1],
+                  timestamp: {
+                    start: 0,
+                    end: 0
+                  }
+                });
+              }
+
+              return results;
+            }();
+
             _context4.t0 = phase;
-            _context4.next = _context4.t0 === 0 ? 14 : _context4.t0 === 1 ? 18 : _context4.t0 === 2 ? 22 : 25;
+            _context4.next = _context4.t0 === 0 ? 11 : _context4.t0 === 1 ? 14 : _context4.t0 === 2 ? 16 : 17;
             break;
 
-          case 14:
+          case 11:
             // invest & withdraw phase
             // use last cycle's data
-            betokenROI = rawROIs[rawROIs.length - 1][1];
-            endTimestamp = phaseStart - phaseLengths[2];
-            startTimestamp = endTimestamp - phaseLengths[1];
-            return _context4.abrupt("break", 25);
+            betokenROI[betokenROI.length - 1].timestamp.end = phaseStart - phaseLengths[2];
+            betokenROI[betokenROI.length - 1].timestamp.start = endTimestamp - phaseLengths[1];
+            return _context4.abrupt("break", 17);
 
-          case 18:
+          case 14:
             // manage phase
             // use current data
-            betokenROI = _helpers.stats.cycle_roi();
-            startTimestamp = phaseStart;
-            endTimestamp = now;
-            return _context4.abrupt("break", 25);
+            betokenROIList.push({
+              roi: _helpers.stats.cycle_roi().toNumber(),
+              timestamp: {
+                start: phaseStart,
+                end: now
+              }
+            });
+            return _context4.abrupt("break", 17);
 
-          case 22:
+          case 16:
             // redeem commission phase
             // use data from manage phase
-            betokenROI = _helpers.stats.cycle_roi();
-            startTimestamp = phaseStart - phaseLengths[1];
-            endTimestamp = phaseStart;
+            betokenROIList.push({
+              roi: _helpers.stats.cycle_roi().toNumber(),
+              timestamp: {
+                start: phaseStart - phaseLengths[1],
+                end: phaseStart
+              }
+            });
 
-          case 25:
-            betokenROI = betokenROI.toNumber(); // get BLX ROI in the given time range
+          case 17:
+            for (i = j = ref = betokenROIList.length - 2; ref <= 0 ? j <= 0 : j >= 0; i = ref <= 0 ? ++j : --j) {
+              betokenROIList[i].timestamp.end = betokenROIList[i + 1].timestamp.start - phaseLengths[0] - phaseLengths[2];
+              betokenROIList[i].timestamp.start = betokenROIList[i].timestamp.end - phaseLengths[1];
+            }
 
-            apiStr = "https://api.iconomi.net/v1/daa/BLX/pricehistory";
-            _context4.next = 29;
-            return callAPI(apiStr);
+            btcROIList = [];
+            k = 0, len = betokenROIList.length;
 
-          case 29:
-            prices = _context4.sent.values;
-            // find price near start timestamp
-            blxStartPrice = 0.0;
-            i = 0;
-
-          case 32:
-            if (!(i < prices.length)) {
-              _context4.next = 40;
+          case 20:
+            if (!(k < len)) {
+              _context4.next = 33;
               break;
             }
 
-            timestamp = prices[i].x;
+            x = betokenROIList[k];
+            _context4.next = 24;
+            return getCoinPriceAtTime("BTC", x.timestamp.start);
 
-            if (!(timestamp >= startTimestamp)) {
-              _context4.next = 37;
-              break;
-            }
-
-            blxStartPrice = prices[i].y;
-            return _context4.abrupt("break", 40);
-
-          case 37:
-            i += 1;
-            _context4.next = 32;
-            break;
-
-          case 40:
-            // find price near end timestamp
-            blxEndPrice = 0.0;
-            i = prices.length - 1;
-
-          case 42:
-            if (!(i >= 0)) {
-              _context4.next = 50;
-              break;
-            }
-
-            timestamp = prices[i].x;
-
-            if (!(timestamp <= endTimestamp)) {
-              _context4.next = 47;
-              break;
-            }
-
-            blxEndPrice = prices[i].y;
-            return _context4.abrupt("break", 50);
-
-          case 47:
-            i -= 1;
-            _context4.next = 42;
-            break;
-
-          case 50:
-            blxROI = (blxEndPrice - blxStartPrice) / blxStartPrice * 100;
-            _context4.next = 53;
-            return getCoinPriceAtTime("BTC", startTimestamp);
-
-          case 53:
+          case 24:
             btcStartPrice = _context4.sent;
-            _context4.next = 56;
-            return getCoinPriceAtTime("BTC", endTimestamp);
+            _context4.next = 27;
+            return getCoinPriceAtTime("BTC", x.timestamp.end);
 
-          case 56:
+          case 27:
             btcEndPrice = _context4.sent;
             btcROI = (btcEndPrice - btcStartPrice) / btcStartPrice * 100;
-            _context4.next = 60;
-            return getCoinPriceAtTime("ETH", startTimestamp);
+            btcROIList.push(btcROI);
 
-          case 60:
+          case 30:
+            k++;
+            _context4.next = 20;
+            break;
+
+          case 33:
+            ethROIList = [];
+            l = 0, len1 = betokenROIList.length;
+
+          case 35:
+            if (!(l < len1)) {
+              _context4.next = 48;
+              break;
+            }
+
+            x = betokenROIList[l];
+            _context4.next = 39;
+            return getCoinPriceAtTime("ETH", x.timestamp.start);
+
+          case 39:
             ethStartPrice = _context4.sent;
-            _context4.next = 63;
-            return getCoinPriceAtTime("ETH", endTimestamp);
+            _context4.next = 42;
+            return getCoinPriceAtTime("ETH", x.timestamp.end);
 
-          case 63:
+          case 42:
             ethEndPrice = _context4.sent;
             ethROI = (ethEndPrice - ethStartPrice) / ethStartPrice * 100;
+            ethROIList.push(ethROI);
+
+          case 45:
+            l++;
+            _context4.next = 35;
+            break;
+
+          case 48:
+            timestamps = function () {
+              var len2, m, results;
+              results = [];
+
+              for (m = 0, len2 = betokenROIList.length; m < len2; m++) {
+                x = betokenROIList[m];
+                results.push(x.timestamp);
+              }
+
+              return results;
+            }();
+
+            betokenROIList = function () {
+              var len2, m, results;
+              results = [];
+
+              for (m = 0, len2 = betokenROIList.length; m < len2; m++) {
+                x = betokenROIList[m];
+                results.push(x.roi);
+              }
+
+              return results;
+            }();
+
             result = {
               ROI: {
-                betoken: betokenROI,
-                blx: blxROI,
-                btc: btcROI,
-                eth: ethROI
+                betoken: betokenROIList,
+                btc: btcROIList,
+                eth: ethROIList
               },
-              timestamp: {
-                start: startTimestamp,
-                end: endTimestamp
-              }
+              'timestamps': timestamps
             };
             return _context4.abrupt("return", result);
 
-          case 67:
+          case 52:
           case "end":
             return _context4.stop();
         }
@@ -44600,7 +44621,6 @@ function () {
   };
 }();
 
-window.loadData = loadData;
 window.getROI = getROI;
 
 },{"./betokenjs/betoken-obj.js":6,"./betokenjs/data-controller.js":7,"./betokenjs/helpers.js":8,"@babel/runtime/helpers/asyncToGenerator":10,"@babel/runtime/helpers/interopRequireDefault":11,"@babel/runtime/regenerator":14,"https":341}],243:[function(require,module,exports){
