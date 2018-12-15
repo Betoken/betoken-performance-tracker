@@ -1,4 +1,7 @@
 $(document).ready(() => {
+    $("#performance-chart-wrapper").LoadingOverlay("show", {
+        background: "rgba(255, 255, 255, 0)"
+    });
     window.getROI().then((result) => {
         var timestamps = [];
         for (var i = 0; i < result.timestamps.length; i++) {
@@ -71,5 +74,6 @@ $(document).ready(() => {
                 }
             }
         });
+        $("#performance-chart-wrapper").LoadingOverlay("hide");
     });
 });
