@@ -53,7 +53,7 @@ $(document).ready(() => {
                 },
                 title: {
                     display: true,
-                    text: 'Return on investment comparison'
+                    text: 'Monthly Return On Investment Comparison'
                 },
                 tooltips: {
                     enabled: true,
