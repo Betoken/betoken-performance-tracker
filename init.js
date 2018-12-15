@@ -17,18 +17,21 @@ $(document).ready(() => {
                     {
                         label: 'Betoken',
                         borderColor: '#22c88a',
+                        backgroundColor: '#22c88a',
                         fill: false,
                         data: result.ROI.betoken
                     },
                     {
                         label: 'Bitcoin',
                         borderColor: '#ff9500',
+                        backgroundColor: '#ff9500',
                         fill: false,
                         data: result.ROI.btc
                     },
                     {
                         label: 'Ethereum',
                         borderColor: '#497a9a',
+                        backgroundColor: '#497a9a',
                         fill: false,
                         data: result.ROI.eth
                     }
