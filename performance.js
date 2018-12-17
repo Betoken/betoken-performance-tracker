@@ -162,7 +162,9 @@ getROI = async function() {
       btc: btcROIList,
       eth: ethROIList
     },
-    'timestamps': timestamps
+    'timestamps': timestamps,
+    btk1MonthROI: stats.cycle_roi(),
+    btkInceptionROI: stats.avg_roi()
   };
   return result;
 };

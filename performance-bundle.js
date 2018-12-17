@@ -44444,7 +44444,9 @@ function () {
                 btc: btcROIList,
                 eth: ethROIList
               },
-              'timestamps': timestamps
+              'timestamps': timestamps,
+              btk1MonthROI: _helpers.stats.cycle_roi(),
+              btkInceptionROI: _helpers.stats.avg_roi()
             };
             return _context6.abrupt("return", result);
 

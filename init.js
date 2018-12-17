@@ -3,6 +3,10 @@ $(document).ready(() => {
         background: "rgba(255, 255, 255, 0)"
     });
     window.getROI().then((result) => {
+        // 4 decimals
+        $("#1-month-roi").text(`${Math.round(result.btk1MonthROI * 10000) / 10000}`);
+        $("#inception-roi").text(`${Math.round(result.btkInceptionROI * 10000) / 10000}`);
+
         var timestamps = [];
         for (var i = 0; i < result.timestamps.length; i++) {
             timestamps.push(new Date(result.timestamps[i].start * 1e3).toLocaleDateString() + ' to ' + new Date(result.timestamps[i].end * 1e3).toLocaleDateString());
