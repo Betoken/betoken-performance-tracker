@@ -20,8 +20,8 @@ $(document).ready(() => {
                     {
                         label: 'Betoken',
                         borderColor: '#22c88a',
-                        backgroundColor: '#22c88a',
-                        fill: false,
+                        backgroundColor: '#B9EEE1',
+                        fill: true,
                         data: result.ROI.betoken
                     },
                     {
@@ -51,7 +51,11 @@ $(document).ready(() => {
                         gridLines: {
                             display: true
                         },
-                        
+                        ticks: {
+                            callback: function(value, index, values) {
+                                return value + '%';
+                            }
+                        }
                     }]
                 },
                 title: {
