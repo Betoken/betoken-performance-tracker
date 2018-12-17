@@ -1,6 +1,6 @@
 import { Betoken } from "./betokenjs/betoken-obj.js"
 import { stats, timer } from "./betokenjs/helpers.js"
-import { loadMetadata, loadFundData, loadTokenPrices, loadStats } from "./betokenjs/data-controller.js"
+import { loadMetadata, loadTokenPrices, loadStats } from "./betokenjs/data-controller.js"
 https = require "https"
 
 callAPI = (apiStr) ->
@@ -17,10 +17,12 @@ callAPI = (apiStr) ->
         ).on("error", reject)
     )))
 
+
 getCoinPriceAtTime = (coin, time) ->
     apiStr = "https://min-api.cryptocompare.com/data/pricehistorical?fsym=DAI&tsyms=#{coin}&ts=#{time}"
     price = 1 / (await callAPI(apiStr)).DAI[coin]
     return price
+
 
 loadData = () ->
     # init betoken object
@@ -28,8 +30,7 @@ loadData = () ->
     await window.betoken.init()
 
     # load stats data from betoken
-    await loadMetadata()#.then(loadFundData).then(loadTokenPrices).then(loadStats)
-    await loadFundData()
+    await loadMetadata()
     await loadTokenPrices()
     await loadStats()
 
@@ -77,19 +78,27 @@ getROI = () ->
         betokenROIList[i].timestamp.start = betokenROIList[i].timestamp.end - phaseLengths[1]
 
     btcROIList = []
-    for x in betokenROIList
-        btcStartPrice = await getCoinPriceAtTime("BTC", x.timestamp.start)
-        btcEndPrice = await getCoinPriceAtTime("BTC", x.timestamp.end)
-        btcROI = (btcEndPrice - btcStartPrice) / btcStartPrice * 100
-        btcROIList.push(btcROI)
-
     ethROIList = []
-    for x in betokenROIList
-        ethStartPrice = await getCoinPriceAtTime("ETH", x.timestamp.start)
-        ethEndPrice = await getCoinPriceAtTime("ETH", x.timestamp.end)
-        ethROI = (ethEndPrice - ethStartPrice) / ethStartPrice * 100
-        ethROIList.push(ethROI)
 
+    await Promise.all([
+        Promise.all(betokenROIList.map((x) ->
+            btcStartPrice = await getCoinPriceAtTime("BTC", x.timestamp.start)
+            btcEndPrice = await getCoinPriceAtTime("BTC", x.timestamp.end)
+            btcROI = (btcEndPrice - btcStartPrice) / btcStartPrice * 100
+            return btcROI
+        )).then((result) ->
+            btcROIList = result
+        ),
+        Promise.all(betokenROIList.map((x) ->
+            ethStartPrice = await getCoinPriceAtTime("ETH", x.timestamp.start)
+            ethEndPrice = await getCoinPriceAtTime("ETH", x.timestamp.end)
+            ethROI = (ethEndPrice - ethStartPrice) / ethStartPrice * 100
+            return ethROI
+        )).then((result) ->
+            ethROIList = result
+        )
+    ])
+    
     timestamps = (x.timestamp for x in betokenROIList)
     betokenROIList = (x.roi for x in betokenROIList)
 

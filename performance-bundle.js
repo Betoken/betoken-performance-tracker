@@ -2679,7 +2679,7 @@ var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefau
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.loadStats = exports.loadTokenPrices = exports.loadFundData = exports.loadMetadata = exports.assetSymbolToAddress = exports.assetAddressToSymbol = exports.assetSymbolToPrice = exports.networkPrefix = exports.networkName = exports.isLoadingPrices = exports.tokenAddresses = exports.tokenPrices = exports.countdownSec = exports.countdownMin = exports.countdownHour = exports.countdownDay = exports.startTimeOfCyclePhase = exports.phaseLengths = exports.cyclePhase = exports.cycleNumber = exports.ROIArray = exports.cycleTotalCommission = exports.historicalTotalCommission = exports.prevCommission = exports.avgROI = exports.currROI = exports.fundValue = exports.assetFeeRate = exports.commissionRate = exports.totalFunds = exports.sharesTotalSupply = exports.kairoTotalSupply = exports.TOKENS = void 0;
+exports.loadStats = exports.loadTokenPrices = exports.loadMetadata = exports.assetSymbolToAddress = exports.assetAddressToSymbol = exports.assetSymbolToPrice = exports.networkPrefix = exports.networkName = exports.isLoadingPrices = exports.tokenAddresses = exports.tokenPrices = exports.startTimeOfCyclePhase = exports.phaseLengths = exports.cyclePhase = exports.cycleNumber = exports.ROIArray = exports.avgROI = exports.currROI = exports.fundValue = exports.totalFunds = exports.TOKENS = void 0;
 
 var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"));
 
@@ -2700,29 +2700,15 @@ var DEPLOYED_BLOCK = 2721413;
 var DAI_ADDR = "0x6f2d6ff85efca691aad23d549771160a12f0a0fc"; // instance variables
 // fund metadata
 
-var kairoTotalSupply = new _meteorStandaloneReactiveVar.default((0, _bignumber.default)(0));
-exports.kairoTotalSupply = kairoTotalSupply;
-var sharesTotalSupply = new _meteorStandaloneReactiveVar.default((0, _bignumber.default)(0));
-exports.sharesTotalSupply = sharesTotalSupply;
-var totalFunds = new _meteorStandaloneReactiveVar.default((0, _bignumber.default)(0));
-exports.totalFunds = totalFunds;
-var commissionRate = new _meteorStandaloneReactiveVar.default((0, _bignumber.default)(0));
-exports.commissionRate = commissionRate;
-var assetFeeRate = new _meteorStandaloneReactiveVar.default((0, _bignumber.default)(0)); // fund stats
+var totalFunds = new _meteorStandaloneReactiveVar.default((0, _bignumber.default)(0)); // fund stats
 
-exports.assetFeeRate = assetFeeRate;
+exports.totalFunds = totalFunds;
 var fundValue = new _meteorStandaloneReactiveVar.default((0, _bignumber.default)(0));
 exports.fundValue = fundValue;
 var currROI = new _meteorStandaloneReactiveVar.default((0, _bignumber.default)(0));
 exports.currROI = currROI;
 var avgROI = new _meteorStandaloneReactiveVar.default((0, _bignumber.default)(0));
 exports.avgROI = avgROI;
-var prevCommission = new _meteorStandaloneReactiveVar.default((0, _bignumber.default)(0));
-exports.prevCommission = prevCommission;
-var historicalTotalCommission = new _meteorStandaloneReactiveVar.default((0, _bignumber.default)(0));
-exports.historicalTotalCommission = historicalTotalCommission;
-var cycleTotalCommission = new _meteorStandaloneReactiveVar.default((0, _bignumber.default)(0));
-exports.cycleTotalCommission = cycleTotalCommission;
 var ROIArray = new _meteorStandaloneReactiveVar.default([]); // cycle timekeeping
 
 exports.ROIArray = ROIArray;
@@ -2732,17 +2718,9 @@ var cyclePhase = new _meteorStandaloneReactiveVar.default(0);
 exports.cyclePhase = cyclePhase;
 var phaseLengths = new _meteorStandaloneReactiveVar.default([]);
 exports.phaseLengths = phaseLengths;
-var startTimeOfCyclePhase = new _meteorStandaloneReactiveVar.default(0);
-exports.startTimeOfCyclePhase = startTimeOfCyclePhase;
-var countdownDay = new _meteorStandaloneReactiveVar.default(0);
-exports.countdownDay = countdownDay;
-var countdownHour = new _meteorStandaloneReactiveVar.default(0);
-exports.countdownHour = countdownHour;
-var countdownMin = new _meteorStandaloneReactiveVar.default(0);
-exports.countdownMin = countdownMin;
-var countdownSec = new _meteorStandaloneReactiveVar.default(0); // token data
+var startTimeOfCyclePhase = new _meteorStandaloneReactiveVar.default(0); // token data
 
-exports.countdownSec = countdownSec;
+exports.startTimeOfCyclePhase = startTimeOfCyclePhase;
 var tokenPrices = new _meteorStandaloneReactiveVar.default([]);
 exports.tokenPrices = tokenPrices;
 var tokenAddresses = new _meteorStandaloneReactiveVar.default([]); // loading indicator
@@ -2771,32 +2749,10 @@ exports.assetAddressToSymbol = assetAddressToSymbol;
 
 var assetSymbolToAddress = function assetSymbolToAddress(_symbol) {
   return tokenAddresses.get()[TOKENS.indexOf(_symbol)];
-};
-
-exports.assetSymbolToAddress = assetSymbolToAddress;
-
-var clock = function clock() {
-  var timeKeeper = setInterval(function () {
-    var days, distance, hours, minutes, now, seconds, target;
-    now = Math.floor(new Date().getTime() / 1000);
-    target = startTimeOfCyclePhase.get() + phaseLengths.get()[cyclePhase.get()];
-    distance = target - now;
-
-    if (distance > 0) {
-      days = Math.floor(distance / (60 * 60 * 24));
-      hours = Math.floor(distance % (60 * 60 * 24) / (60 * 60));
-      minutes = Math.floor(distance % (60 * 60) / 60);
-      seconds = Math.floor(distance % 60);
-      countdownDay.set(days);
-      countdownHour.set(hours);
-      countdownMin.set(minutes);
-      countdownSec.set(seconds);
-    } else {
-      clearInterval(timeKeeper);
-    }
-  }, 1000);
 }; // data loaders
 
+
+exports.assetSymbolToAddress = assetSymbolToAddress;
 
 var loadMetadata =
 /*#__PURE__*/
@@ -2820,28 +2776,8 @@ function () {
 
             _context2.t3 = _context2.sent.map(_context2.t2);
             _context2.t4 = _context2.t1.set.call(_context2.t1, _context2.t3);
-            _context2.t5 = commissionRate;
-            _context2.t6 = _bignumber.default;
-            _context2.next = 11;
-            return betoken.getPrimitiveVar("commissionRate");
-
-          case 11:
-            _context2.t7 = _context2.sent;
-            _context2.t8 = PRECISION;
-            _context2.t9 = (0, _context2.t6)(_context2.t7).div(_context2.t8);
-            _context2.t10 = _context2.t5.set.call(_context2.t5, _context2.t9);
-            _context2.t11 = assetFeeRate;
-            _context2.t12 = _bignumber.default;
-            _context2.next = 19;
-            return betoken.getPrimitiveVar("assetFeeRate");
-
-          case 19:
-            _context2.t13 = _context2.sent;
-            _context2.t14 = PRECISION;
-            _context2.t15 = (0, _context2.t12)(_context2.t13).div(_context2.t14);
-            _context2.t16 = _context2.t11.set.call(_context2.t11, _context2.t15);
-            _context2.t17 = tokenAddresses;
-            _context2.next = 26;
+            _context2.t5 = tokenAddresses;
+            _context2.next = 10;
             return Promise.all(TOKENS.map(
             /*#__PURE__*/
             function () {
@@ -2871,13 +2807,37 @@ function () {
               };
             }()));
 
+          case 10:
+            _context2.t6 = _context2.sent;
+            _context2.t7 = _context2.t5.set.call(_context2.t5, _context2.t6);
+            _context2.t8 = cyclePhase;
+            _context2.next = 15;
+            return betoken.getPrimitiveVar("cyclePhase");
+
+          case 15:
+            _context2.t9 = +_context2.sent;
+            _context2.t10 = _context2.t8.set.call(_context2.t8, _context2.t9);
+            _context2.t11 = startTimeOfCyclePhase;
+            _context2.next = 20;
+            return betoken.getPrimitiveVar("startTimeOfCyclePhase");
+
+          case 20:
+            _context2.t12 = +_context2.sent;
+            _context2.t13 = _context2.t11.set.call(_context2.t11, _context2.t12);
+            _context2.t14 = totalFunds;
+            _context2.t15 = _bignumber.default;
+            _context2.next = 26;
+            return betoken.getPrimitiveVar("totalFundsInDAI");
+
           case 26:
-            _context2.t18 = _context2.sent;
-            _context2.t19 = _context2.t17.set.call(_context2.t17, _context2.t18);
-            _context2.t20 = [_context2.t4, _context2.t10, _context2.t16, _context2.t19];
+            _context2.t16 = _context2.sent;
+            _context2.t17 = PRECISION;
+            _context2.t18 = (0, _context2.t15)(_context2.t16).div(_context2.t17);
+            _context2.t19 = _context2.t14.set.call(_context2.t14, _context2.t18);
+            _context2.t20 = [_context2.t4, _context2.t7, _context2.t10, _context2.t13, _context2.t19];
             return _context2.abrupt("return", _context2.t0.all.call(_context2.t0, _context2.t20));
 
-          case 30:
+          case 32:
           case "end":
             return _context2.stop();
         }
@@ -2892,150 +2852,63 @@ function () {
 
 exports.loadMetadata = loadMetadata;
 
-var loadFundData =
+var loadTokenPrices =
 /*#__PURE__*/
 function () {
   var _ref3 = (0, _asyncToGenerator2.default)(
   /*#__PURE__*/
-  _regenerator.default.mark(function _callee3() {
-    return _regenerator.default.wrap(function _callee3$(_context3) {
+  _regenerator.default.mark(function _callee4() {
+    return _regenerator.default.wrap(function _callee4$(_context4) {
       while (1) {
-        switch (_context3.prev = _context3.next) {
-          case 0:
-            _context3.t0 = Promise;
-            _context3.t1 = cycleNumber;
-            _context3.next = 4;
-            return betoken.getPrimitiveVar("cycleNumber");
-
-          case 4:
-            _context3.t2 = +_context3.sent;
-            _context3.t3 = _context3.t1.set.call(_context3.t1, _context3.t2);
-            _context3.t4 = cyclePhase;
-            _context3.next = 9;
-            return betoken.getPrimitiveVar("cyclePhase");
-
-          case 9:
-            _context3.t5 = +_context3.sent;
-            _context3.t6 = _context3.t4.set.call(_context3.t4, _context3.t5);
-            _context3.t7 = startTimeOfCyclePhase;
-            _context3.next = 14;
-            return betoken.getPrimitiveVar("startTimeOfCyclePhase");
-
-          case 14:
-            _context3.t8 = +_context3.sent;
-            _context3.t9 = _context3.t7.set.call(_context3.t7, _context3.t8);
-            _context3.t10 = sharesTotalSupply;
-            _context3.t11 = _bignumber.default;
-            _context3.next = 20;
-            return betoken.getShareTotalSupply();
-
-          case 20:
-            _context3.t12 = _context3.sent;
-            _context3.t13 = PRECISION;
-            _context3.t14 = (0, _context3.t11)(_context3.t12).div(_context3.t13);
-            _context3.t15 = _context3.t10.set.call(_context3.t10, _context3.t14);
-            _context3.t16 = totalFunds;
-            _context3.t17 = _bignumber.default;
-            _context3.next = 28;
-            return betoken.getPrimitiveVar("totalFundsInDAI");
-
-          case 28:
-            _context3.t18 = _context3.sent;
-            _context3.t19 = PRECISION;
-            _context3.t20 = (0, _context3.t17)(_context3.t18).div(_context3.t19);
-            _context3.t21 = _context3.t16.set.call(_context3.t16, _context3.t20);
-            _context3.t22 = kairoTotalSupply;
-            _context3.t23 = _bignumber.default;
-            _context3.next = 36;
-            return betoken.getKairoTotalSupply();
-
-          case 36:
-            _context3.t24 = _context3.sent;
-            _context3.t25 = PRECISION;
-            _context3.t26 = (0, _context3.t23)(_context3.t24).div(_context3.t25);
-            _context3.t27 = _context3.t22.set.call(_context3.t22, _context3.t26);
-            _context3.t28 = [_context3.t3, _context3.t6, _context3.t9, _context3.t15, _context3.t21, _context3.t27];
-
-            _context3.t29 = function () {
-              if (countdownDay.get() == 0 && countdownHour.get() == 0 && countdownMin.get() == 0 && countdownSec.get() == 0) {
-                clock();
-              }
-            };
-
-            return _context3.abrupt("return", _context3.t0.all.call(_context3.t0, _context3.t28).then(_context3.t29));
-
-          case 43:
-          case "end":
-            return _context3.stop();
-        }
-      }
-    }, _callee3, this);
-  }));
-
-  return function loadFundData() {
-    return _ref3.apply(this, arguments);
-  };
-}();
-
-exports.loadFundData = loadFundData;
-
-var loadTokenPrices =
-/*#__PURE__*/
-function () {
-  var _ref4 = (0, _asyncToGenerator2.default)(
-  /*#__PURE__*/
-  _regenerator.default.mark(function _callee5() {
-    return _regenerator.default.wrap(function _callee5$(_context5) {
-      while (1) {
-        switch (_context5.prev = _context5.next) {
+        switch (_context4.prev = _context4.next) {
           case 0:
             isLoadingPrices.set(true);
-            _context5.t0 = tokenPrices;
-            _context5.next = 4;
+            _context4.t0 = tokenPrices;
+            _context4.next = 4;
             return Promise.all(TOKENS.map(
             /*#__PURE__*/
             function () {
-              var _ref5 = (0, _asyncToGenerator2.default)(
+              var _ref4 = (0, _asyncToGenerator2.default)(
               /*#__PURE__*/
-              _regenerator.default.mark(function _callee4(_token) {
-                return _regenerator.default.wrap(function _callee4$(_context4) {
+              _regenerator.default.mark(function _callee3(_token) {
+                return _regenerator.default.wrap(function _callee3$(_context3) {
                   while (1) {
-                    switch (_context4.prev = _context4.next) {
+                    switch (_context3.prev = _context3.next) {
                       case 0:
-                        return _context4.abrupt("return", betoken.getTokenPrice(_token).then(function (_price) {
+                        return _context3.abrupt("return", betoken.getTokenPrice(_token).then(function (_price) {
                           return (0, _bignumber.default)(_price).div(PRECISION);
                         }));
 
                       case 1:
                       case "end":
-                        return _context4.stop();
+                        return _context3.stop();
                     }
                   }
-                }, _callee4, this);
+                }, _callee3, this);
               }));
 
               return function (_x2) {
-                return _ref5.apply(this, arguments);
+                return _ref4.apply(this, arguments);
               };
             }()));
 
           case 4:
-            _context5.t1 = _context5.sent;
+            _context4.t1 = _context4.sent;
 
-            _context5.t0.set.call(_context5.t0, _context5.t1);
+            _context4.t0.set.call(_context4.t0, _context4.t1);
 
             isLoadingPrices.set(false);
 
           case 7:
           case "end":
-            return _context5.stop();
+            return _context4.stop();
         }
       }
-    }, _callee5, this);
+    }, _callee4, this);
   }));
 
   return function loadTokenPrices() {
-    return _ref4.apply(this, arguments);
+    return _ref3.apply(this, arguments);
   };
 }();
 
@@ -3044,84 +2917,59 @@ exports.loadTokenPrices = loadTokenPrices;
 var loadStats =
 /*#__PURE__*/
 function () {
-  var _ref6 = (0, _asyncToGenerator2.default)(
+  var _ref5 = (0, _asyncToGenerator2.default)(
   /*#__PURE__*/
-  _regenerator.default.mark(function _callee7() {
+  _regenerator.default.mark(function _callee6() {
     var _fundValue, getTokenValue, getAllTokenValues, totalDAI, rois, totalInputFunds, totalOutputFunds;
 
-    return _regenerator.default.wrap(function _callee7$(_context7) {
+    return _regenerator.default.wrap(function _callee6$(_context6) {
       while (1) {
-        switch (_context7.prev = _context7.next) {
+        switch (_context6.prev = _context6.next) {
           case 0:
-            _context7.t0 = Promise;
-            _context7.t1 = cycleTotalCommission;
-            _context7.t2 = _bignumber.default;
-            _context7.next = 5;
-            return betoken.getMappingOrArrayItem("totalCommissionOfCycle", cycleNumber.get());
-
-          case 5:
-            _context7.t3 = _context7.sent;
-            _context7.t4 = PRECISION;
-            _context7.t5 = (0, _context7.t2)(_context7.t3).div(_context7.t4);
-            _context7.t6 = _context7.t1.set.call(_context7.t1, _context7.t5);
-            _context7.t7 = prevCommission;
-            _context7.t8 = _bignumber.default;
-            _context7.next = 13;
-            return betoken.getMappingOrArrayItem("totalCommissionOfCycle", cycleNumber.get() - 1);
-
-          case 13:
-            _context7.t9 = _context7.sent;
-            _context7.t10 = PRECISION;
-            _context7.t11 = (0, _context7.t8)(_context7.t9).div(_context7.t10);
-            _context7.t12 = _context7.t7.set.call(_context7.t7, _context7.t11);
-            _context7.t13 = [_context7.t6, _context7.t12];
-
-            _context7.t0.all.call(_context7.t0, _context7.t13);
-
             // calculate fund value
             _fundValue = (0, _bignumber.default)(0);
 
             getTokenValue =
             /*#__PURE__*/
             function () {
-              var _ref7 = (0, _asyncToGenerator2.default)(
+              var _ref6 = (0, _asyncToGenerator2.default)(
               /*#__PURE__*/
-              _regenerator.default.mark(function _callee6(i) {
+              _regenerator.default.mark(function _callee5(i) {
                 var _token, balance, value;
 
-                return _regenerator.default.wrap(function _callee6$(_context6) {
+                return _regenerator.default.wrap(function _callee5$(_context5) {
                   while (1) {
-                    switch (_context6.prev = _context6.next) {
+                    switch (_context5.prev = _context5.next) {
                       case 0:
                         _token = TOKENS[i];
-                        _context6.t1 = _bignumber.default;
-                        _context6.next = 4;
+                        _context5.t1 = _bignumber.default;
+                        _context5.next = 4;
                         return betoken.getTokenBalance(assetSymbolToAddress(_token), betoken.contracts.BetokenFund.options.address);
 
                       case 4:
-                        _context6.t2 = _context6.sent;
-                        _context6.t0 = (0, _context6.t1)(_context6.t2);
-                        _context6.t3 = (0, _bignumber.default)(10);
-                        _context6.next = 9;
+                        _context5.t2 = _context5.sent;
+                        _context5.t0 = (0, _context5.t1)(_context5.t2);
+                        _context5.t3 = (0, _bignumber.default)(10);
+                        _context5.next = 9;
                         return betoken.getTokenDecimals(assetSymbolToAddress(_token));
 
                       case 9:
-                        _context6.t4 = _context6.sent;
-                        _context6.t5 = _context6.t3.pow.call(_context6.t3, _context6.t4);
-                        balance = _context6.t0.div.call(_context6.t0, _context6.t5);
+                        _context5.t4 = _context5.sent;
+                        _context5.t5 = _context5.t3.pow.call(_context5.t3, _context5.t4);
+                        balance = _context5.t0.div.call(_context5.t0, _context5.t5);
                         value = balance.times(assetSymbolToPrice(_token));
                         _fundValue = _fundValue.plus(value);
 
                       case 14:
                       case "end":
-                        return _context6.stop();
+                        return _context5.stop();
                     }
                   }
-                }, _callee6, this);
+                }, _callee5, this);
               }));
 
               return function getTokenValue(_x3) {
-                return _ref7.apply(this, arguments);
+                return _ref6.apply(this, arguments);
               };
             }();
 
@@ -3135,24 +2983,24 @@ function () {
               return result;
             };
 
-            _context7.next = 24;
+            _context6.next = 5;
             return Promise.all(getAllTokenValues());
 
-          case 24:
-            _context7.t15 = _bignumber.default;
-            _context7.next = 27;
+          case 5:
+            _context6.t1 = _bignumber.default;
+            _context6.next = 8;
             return betoken.getTokenBalance(DAI_ADDR, betoken.contracts.BetokenFund.options.address);
 
-          case 27:
-            _context7.t16 = _context7.sent;
-            _context7.t14 = (0, _context7.t15)(_context7.t16);
-            _context7.next = 31;
+          case 8:
+            _context6.t2 = _context6.sent;
+            _context6.t0 = (0, _context6.t1)(_context6.t2);
+            _context6.next = 12;
             return betoken.getPrimitiveVar("totalCommissionLeft");
 
-          case 31:
-            _context7.t17 = _context7.sent;
-            _context7.t18 = PRECISION;
-            totalDAI = _context7.t14.minus.call(_context7.t14, _context7.t17).div(_context7.t18);
+          case 12:
+            _context6.t3 = _context6.sent;
+            _context6.t4 = PRECISION;
+            totalDAI = _context6.t0.minus.call(_context6.t0, _context6.t3).div(_context6.t4);
             _fundValue = _fundValue.plus(totalDAI);
             fundValue.set(_fundValue); // get stats
 
@@ -3161,8 +3009,7 @@ function () {
             totalOutputFunds = (0, _bignumber.default)(0);
             currROI.set((0, _bignumber.default)(0));
             avgROI.set((0, _bignumber.default)(0));
-            historicalTotalCommission.set((0, _bignumber.default)(0));
-            return _context7.abrupt("return", Promise.all([betoken.contracts.BetokenFund.getPastEvents("ROI", {
+            return _context6.abrupt("return", Promise.all([betoken.contracts.BetokenFund.getPastEvents("ROI", {
               fromBlock: DEPLOYED_BLOCK
             }).then(function (events) {
               var ROI, _event, data, j, len;
@@ -3194,16 +3041,16 @@ function () {
               avgROI.set(totalOutputFunds.minus(totalInputFunds).div(totalInputFunds).times(100));
             })]));
 
-          case 43:
+          case 23:
           case "end":
-            return _context7.stop();
+            return _context6.stop();
         }
       }
-    }, _callee7, this);
+    }, _callee6, this);
   }));
 
   return function loadStats() {
-    return _ref6.apply(this, arguments);
+    return _ref5.apply(this, arguments);
   };
 }();
 
@@ -3226,18 +3073,6 @@ var Data = require("./data-controller"); // exports
 
 
 var timer = {
-  day: function day() {
-    return Data.countdownDay.get();
-  },
-  hour: function hour() {
-    return Data.countdownHour.get();
-  },
-  minute: function minute() {
-    return Data.countdownMin.get();
-  },
-  second: function second() {
-    return Data.countdownSec.get();
-  },
   phase: function phase() {
     return Data.cyclePhase.get();
   },
@@ -3250,16 +3085,6 @@ var timer = {
 };
 exports.timer = timer;
 var stats = {
-  cycle_length: function cycle_length() {
-    if (Data.phaseLengths.get().length > 0) {
-      return (0, _bignumber.default)(Data.phaseLengths.get().reduce(function (t, n) {
-        return t + n;
-      })).div(24 * 60 * 60).toDigits(3);
-    }
-  },
-  total_funds: function total_funds() {
-    return Data.totalFunds.get();
-  },
   avg_roi: function avg_roi() {
     return Data.avgROI.get();
   },
@@ -3275,9 +3100,6 @@ var stats = {
   },
   raw_roi_data: function raw_roi_data() {
     return Data.ROIArray.get();
-  },
-  ranking: function ranking() {
-    return Data.kairoRanking.get();
   }
 };
 exports.stats = stats;
@@ -44411,20 +44233,16 @@ function () {
 
           case 5:
             _context3.next = 7;
-            return (0, _dataController.loadFundData)();
+            return (0, _dataController.loadTokenPrices)();
 
           case 7:
             _context3.next = 9;
-            return (0, _dataController.loadTokenPrices)();
-
-          case 9:
-            _context3.next = 11;
             return (0, _dataController.loadStats)();
 
-          case 11:
+          case 9:
             return _context3.abrupt("return", _context3.sent);
 
-          case 12:
+          case 10:
           case "end":
             return _context3.stop();
         }
@@ -44442,13 +44260,13 @@ getROI =
 function () {
   var _ref4 = (0, _asyncToGenerator2.default)(
   /*#__PURE__*/
-  _regenerator.default.mark(function _callee4() {
-    var betokenROIList, btcEndPrice, btcROI, btcROIList, btcStartPrice, ethEndPrice, ethROI, ethROIList, ethStartPrice, i, j, k, l, len, len1, now, phase, phaseLengths, phaseStart, rawROIs, ref, result, timestamps, x;
-    return _regenerator.default.wrap(function _callee4$(_context4) {
+  _regenerator.default.mark(function _callee6() {
+    var betokenROIList, btcROIList, ethROIList, i, j, now, phase, phaseLengths, phaseStart, rawROIs, ref, result, timestamps, x;
+    return _regenerator.default.wrap(function _callee6$(_context6) {
       while (1) {
-        switch (_context4.prev = _context4.next) {
+        switch (_context6.prev = _context6.next) {
           case 0:
-            _context4.next = 2;
+            _context6.next = 2;
             return loadData();
 
           case 2:
@@ -44476,8 +44294,8 @@ function () {
               return results;
             }();
 
-            _context4.t0 = phase;
-            _context4.next = _context4.t0 === 0 ? 11 : _context4.t0 === 1 ? 14 : _context4.t0 === 2 ? 16 : 17;
+            _context6.t0 = phase;
+            _context6.next = _context6.t0 === 0 ? 11 : _context6.t0 === 1 ? 14 : _context6.t0 === 2 ? 16 : 17;
             break;
 
           case 11:
@@ -44485,7 +44303,7 @@ function () {
             // use last cycle's data
             betokenROI[betokenROI.length - 1].timestamp.end = phaseStart - phaseLengths[2];
             betokenROI[betokenROI.length - 1].timestamp.start = endTimestamp - phaseLengths[1];
-            return _context4.abrupt("break", 17);
+            return _context6.abrupt("break", 17);
 
           case 14:
             // manage phase
@@ -44497,7 +44315,7 @@ function () {
                 end: now
               }
             });
-            return _context4.abrupt("break", 17);
+            return _context6.abrupt("break", 17);
 
           case 16:
             // redeem commission phase
@@ -44517,69 +44335,91 @@ function () {
             }
 
             btcROIList = [];
-            k = 0, len = betokenROIList.length;
-
-          case 20:
-            if (!(k < len)) {
-              _context4.next = 33;
-              break;
-            }
-
-            x = betokenROIList[k];
-            _context4.next = 24;
-            return getCoinPriceAtTime("BTC", x.timestamp.start);
-
-          case 24:
-            btcStartPrice = _context4.sent;
-            _context4.next = 27;
-            return getCoinPriceAtTime("BTC", x.timestamp.end);
-
-          case 27:
-            btcEndPrice = _context4.sent;
-            btcROI = (btcEndPrice - btcStartPrice) / btcStartPrice * 100;
-            btcROIList.push(btcROI);
-
-          case 30:
-            k++;
-            _context4.next = 20;
-            break;
-
-          case 33:
             ethROIList = [];
-            l = 0, len1 = betokenROIList.length;
+            _context6.next = 22;
+            return Promise.all([Promise.all(betokenROIList.map(
+            /*#__PURE__*/
+            function () {
+              var _ref5 = (0, _asyncToGenerator2.default)(
+              /*#__PURE__*/
+              _regenerator.default.mark(function _callee4(x) {
+                var btcEndPrice, btcROI, btcStartPrice;
+                return _regenerator.default.wrap(function _callee4$(_context4) {
+                  while (1) {
+                    switch (_context4.prev = _context4.next) {
+                      case 0:
+                        _context4.next = 2;
+                        return getCoinPriceAtTime("BTC", x.timestamp.start);
 
-          case 35:
-            if (!(l < len1)) {
-              _context4.next = 48;
-              break;
-            }
+                      case 2:
+                        btcStartPrice = _context4.sent;
+                        _context4.next = 5;
+                        return getCoinPriceAtTime("BTC", x.timestamp.end);
 
-            x = betokenROIList[l];
-            _context4.next = 39;
-            return getCoinPriceAtTime("ETH", x.timestamp.start);
+                      case 5:
+                        btcEndPrice = _context4.sent;
+                        btcROI = (btcEndPrice - btcStartPrice) / btcStartPrice * 100;
+                        return _context4.abrupt("return", btcROI);
 
-          case 39:
-            ethStartPrice = _context4.sent;
-            _context4.next = 42;
-            return getCoinPriceAtTime("ETH", x.timestamp.end);
+                      case 8:
+                      case "end":
+                        return _context4.stop();
+                    }
+                  }
+                }, _callee4, this);
+              }));
 
-          case 42:
-            ethEndPrice = _context4.sent;
-            ethROI = (ethEndPrice - ethStartPrice) / ethStartPrice * 100;
-            ethROIList.push(ethROI);
+              return function (_x4) {
+                return _ref5.apply(this, arguments);
+              };
+            }())).then(function (result) {
+              return btcROIList = result;
+            }), Promise.all(betokenROIList.map(
+            /*#__PURE__*/
+            function () {
+              var _ref6 = (0, _asyncToGenerator2.default)(
+              /*#__PURE__*/
+              _regenerator.default.mark(function _callee5(x) {
+                var ethEndPrice, ethROI, ethStartPrice;
+                return _regenerator.default.wrap(function _callee5$(_context5) {
+                  while (1) {
+                    switch (_context5.prev = _context5.next) {
+                      case 0:
+                        _context5.next = 2;
+                        return getCoinPriceAtTime("ETH", x.timestamp.start);
 
-          case 45:
-            l++;
-            _context4.next = 35;
-            break;
+                      case 2:
+                        ethStartPrice = _context5.sent;
+                        _context5.next = 5;
+                        return getCoinPriceAtTime("ETH", x.timestamp.end);
 
-          case 48:
+                      case 5:
+                        ethEndPrice = _context5.sent;
+                        ethROI = (ethEndPrice - ethStartPrice) / ethStartPrice * 100;
+                        return _context5.abrupt("return", ethROI);
+
+                      case 8:
+                      case "end":
+                        return _context5.stop();
+                    }
+                  }
+                }, _callee5, this);
+              }));
+
+              return function (_x5) {
+                return _ref6.apply(this, arguments);
+              };
+            }())).then(function (result) {
+              return ethROIList = result;
+            })]);
+
+          case 22:
             timestamps = function () {
-              var len2, m, results;
+              var k, len, results;
               results = [];
 
-              for (m = 0, len2 = betokenROIList.length; m < len2; m++) {
-                x = betokenROIList[m];
+              for (k = 0, len = betokenROIList.length; k < len; k++) {
+                x = betokenROIList[k];
                 results.push(x.timestamp);
               }
 
@@ -44587,11 +44427,11 @@ function () {
             }();
 
             betokenROIList = function () {
-              var len2, m, results;
+              var k, len, results;
               results = [];
 
-              for (m = 0, len2 = betokenROIList.length; m < len2; m++) {
-                x = betokenROIList[m];
+              for (k = 0, len = betokenROIList.length; k < len; k++) {
+                x = betokenROIList[k];
                 results.push(x.roi);
               }
 
@@ -44606,14 +44446,14 @@ function () {
               },
               'timestamps': timestamps
             };
-            return _context4.abrupt("return", result);
+            return _context6.abrupt("return", result);
 
-          case 52:
+          case 26:
           case "end":
-            return _context4.stop();
+            return _context6.stop();
         }
       }
-    }, _callee4, this);
+    }, _callee6, this);
   }));
 
   return function getROI() {

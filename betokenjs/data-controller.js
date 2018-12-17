@@ -11,19 +11,12 @@ const DAI_ADDR = "0x6f2d6ff85efca691aad23d549771160a12f0a0fc";
 // instance variables
 
 // fund metadata
-export var kairoTotalSupply = new ReactiveVar(BigNumber(0));
-export var sharesTotalSupply = new ReactiveVar(BigNumber(0));
 export var totalFunds = new ReactiveVar(BigNumber(0));
-export var commissionRate = new ReactiveVar(BigNumber(0));
-export var assetFeeRate = new ReactiveVar(BigNumber(0));
 
 // fund stats
 export var fundValue = new ReactiveVar(BigNumber(0));
 export var currROI = new ReactiveVar(BigNumber(0));
 export var avgROI = new ReactiveVar(BigNumber(0));
-export var prevCommission = new ReactiveVar(BigNumber(0));
-export var historicalTotalCommission = new ReactiveVar(BigNumber(0));
-export var cycleTotalCommission = new ReactiveVar(BigNumber(0));
 export var ROIArray = new ReactiveVar([]);
 
 // cycle timekeeping
@@ -31,10 +24,6 @@ export var cycleNumber = new ReactiveVar(0);
 export var cyclePhase = new ReactiveVar(0);
 export var phaseLengths = new ReactiveVar([]);
 export var startTimeOfCyclePhase = new ReactiveVar(0);
-export var countdownDay = new ReactiveVar(0);
-export var countdownHour = new ReactiveVar(0);
-export var countdownMin = new ReactiveVar(0);
-export var countdownSec = new ReactiveVar(0);
 
 // token data
 export var tokenPrices = new ReactiveVar([]);
@@ -60,53 +49,18 @@ export const assetSymbolToAddress = function(_symbol) {
     return tokenAddresses.get()[TOKENS.indexOf(_symbol)];
 };
 
-const clock = () => {
-    const timeKeeper = setInterval(() => {
-        var days, distance, hours, minutes, now, seconds, target;
-        now = Math.floor(new Date().getTime() / 1000);
-        target = startTimeOfCyclePhase.get() + phaseLengths.get()[cyclePhase.get()];
-        distance = target - now;
-        if (distance > 0) {
-            days = Math.floor(distance / (60 * 60 * 24));
-            hours = Math.floor((distance % (60 * 60 * 24)) / (60 * 60));
-            minutes = Math.floor((distance % (60 * 60)) / 60);
-            seconds = Math.floor(distance % 60);
-            countdownDay.set(days);
-            countdownHour.set(hours);
-            countdownMin.set(minutes);
-            countdownSec.set(seconds);
-        } else {
-            clearInterval(timeKeeper);
-        }
-    }, 1000);
-};
-
 // data loaders
 export const loadMetadata = async () => {
     return Promise.all([
         // get params
         phaseLengths.set(((await betoken.getPrimitiveVar("getPhaseLengths"))).map(x => +x)),
-        commissionRate.set(BigNumber((await betoken.getPrimitiveVar("commissionRate"))).div(PRECISION)),
-        assetFeeRate.set(BigNumber((await betoken.getPrimitiveVar("assetFeeRate"))).div(PRECISION)),
         tokenAddresses.set((await Promise.all(TOKENS.map(async (_token) => {
             return await betoken.tokenSymbolToAddress(_token);
-        }))))
-    ]);
-};
-
-export const loadFundData = async () => {
-    return Promise.all([
-        cycleNumber.set(+((await betoken.getPrimitiveVar("cycleNumber")))),
+        })))),
         cyclePhase.set(+((await betoken.getPrimitiveVar("cyclePhase")))), 
         startTimeOfCyclePhase.set(+((await betoken.getPrimitiveVar("startTimeOfCyclePhase")))),
-        sharesTotalSupply.set(BigNumber((await betoken.getShareTotalSupply())).div(PRECISION)),
-        totalFunds.set(BigNumber((await betoken.getPrimitiveVar("totalFundsInDAI"))).div(PRECISION)),
-        kairoTotalSupply.set(BigNumber((await betoken.getKairoTotalSupply())).div(PRECISION))
-    ]).then(() => {
-        if (countdownDay.get() == 0 && countdownHour.get() == 0 && countdownMin.get() == 0 && countdownSec.get() == 0) {
-            clock();
-        }
-    });
+        totalFunds.set(BigNumber((await betoken.getPrimitiveVar("totalFundsInDAI"))).div(PRECISION))
+    ]);
 };
 
 export const loadTokenPrices = async () => {
@@ -121,12 +75,6 @@ export const loadTokenPrices = async () => {
 };
 
 export const loadStats = async () => {
-    // Get commissions
-    Promise.all([
-        cycleTotalCommission.set(BigNumber((await betoken.getMappingOrArrayItem("totalCommissionOfCycle", cycleNumber.get()))).div(PRECISION)),
-        prevCommission.set(BigNumber((await betoken.getMappingOrArrayItem("totalCommissionOfCycle", cycleNumber.get() - 1))).div(PRECISION))
-    ]);
-
     // calculate fund value
     var _fundValue = BigNumber(0);
     const getTokenValue = async (i) => {
@@ -153,7 +101,6 @@ export const loadStats = async () => {
     var totalOutputFunds = BigNumber(0);
     currROI.set(BigNumber(0));
     avgROI.set(BigNumber(0));
-    historicalTotalCommission.set(BigNumber(0));
     return Promise.all([
         betoken.contracts.BetokenFund.getPastEvents("ROI",
         {

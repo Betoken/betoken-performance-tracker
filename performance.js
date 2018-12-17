@@ -12,7 +12,6 @@ import {
 
 import {
   loadMetadata,
-  loadFundData,
   loadTokenPrices,
   loadStats
 } from "./betokenjs/data-controller.js";
@@ -48,14 +47,13 @@ loadData = async function() {
   window.betoken = new Betoken();
   await window.betoken.init();
   // load stats data from betoken
-  await loadMetadata(); //.then(loadFundData).then(loadTokenPrices).then(loadStats)
-  await loadFundData();
+  await loadMetadata();
   await loadTokenPrices();
   return (await loadStats());
 };
 
 getROI = async function() {
-  var betokenROIList, btcEndPrice, btcROI, btcROIList, btcStartPrice, ethEndPrice, ethROI, ethROIList, ethStartPrice, i, j, k, l, len, len1, now, phase, phaseLengths, phaseStart, rawROIs, ref, result, timestamps, x;
+  var betokenROIList, btcROIList, ethROIList, i, j, now, phase, phaseLengths, phaseStart, rawROIs, ref, result, timestamps, x;
   await loadData();
   // get betoken ROI and time range
   phase = timer.phase();
@@ -111,35 +109,49 @@ getROI = async function() {
     betokenROIList[i].timestamp.start = betokenROIList[i].timestamp.end - phaseLengths[1];
   }
   btcROIList = [];
-  for (k = 0, len = betokenROIList.length; k < len; k++) {
-    x = betokenROIList[k];
-    btcStartPrice = (await getCoinPriceAtTime("BTC", x.timestamp.start));
-    btcEndPrice = (await getCoinPriceAtTime("BTC", x.timestamp.end));
-    btcROI = (btcEndPrice - btcStartPrice) / btcStartPrice * 100;
-    btcROIList.push(btcROI);
-  }
   ethROIList = [];
-  for (l = 0, len1 = betokenROIList.length; l < len1; l++) {
-    x = betokenROIList[l];
-    ethStartPrice = (await getCoinPriceAtTime("ETH", x.timestamp.start));
-    ethEndPrice = (await getCoinPriceAtTime("ETH", x.timestamp.end));
-    ethROI = (ethEndPrice - ethStartPrice) / ethStartPrice * 100;
-    ethROIList.push(ethROI);
-  }
+  await Promise.all([
+    Promise.all(betokenROIList.map(async function(x) {
+      var btcEndPrice,
+    btcROI,
+    btcStartPrice;
+      btcStartPrice = (await getCoinPriceAtTime("BTC",
+    x.timestamp.start));
+      btcEndPrice = (await getCoinPriceAtTime("BTC",
+    x.timestamp.end));
+      btcROI = (btcEndPrice - btcStartPrice) / btcStartPrice * 100;
+      return btcROI;
+    })).then(function(result) {
+      return btcROIList = result;
+    }),
+    Promise.all(betokenROIList.map(async function(x) {
+      var ethEndPrice,
+    ethROI,
+    ethStartPrice;
+      ethStartPrice = (await getCoinPriceAtTime("ETH",
+    x.timestamp.start));
+      ethEndPrice = (await getCoinPriceAtTime("ETH",
+    x.timestamp.end));
+      ethROI = (ethEndPrice - ethStartPrice) / ethStartPrice * 100;
+      return ethROI;
+    })).then(function(result) {
+      return ethROIList = result;
+    })
+  ]);
   timestamps = (function() {
-    var len2, m, results;
+    var k, len, results;
     results = [];
-    for (m = 0, len2 = betokenROIList.length; m < len2; m++) {
-      x = betokenROIList[m];
+    for (k = 0, len = betokenROIList.length; k < len; k++) {
+      x = betokenROIList[k];
       results.push(x.timestamp);
     }
     return results;
   })();
   betokenROIList = (function() {
-    var len2, m, results;
+    var k, len, results;
     results = [];
-    for (m = 0, len2 = betokenROIList.length; m < len2; m++) {
-      x = betokenROIList[m];
+    for (k = 0, len = betokenROIList.length; k < len; k++) {
+      x = betokenROIList[k];
       results.push(x.roi);
     }
     return results;
