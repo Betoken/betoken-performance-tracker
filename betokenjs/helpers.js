@@ -1,5 +1,4 @@
 // imports
-import BigNumber from "bignumber.js";
 const Data = require("./data-controller");
 
 // exports

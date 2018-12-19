@@ -1,6 +1,7 @@
 import { Betoken } from "./betokenjs/betoken-obj.js"
 import { stats, timer } from "./betokenjs/helpers.js"
 import { loadMetadata, loadTokenPrices, loadStats } from "./betokenjs/data-controller.js"
+import BigNumber from "bignumber.js"
 https = require "https"
 
 callAPI = (apiStr) ->
@@ -137,8 +138,8 @@ getROI = () ->
                 oneMonth: stats.cycle_roi()
                 sinceInception: stats.avg_roi()
             }
-            SharpeRatio: sharpeRatio
-            Std: excessReturnStd
+            SharpeRatio: BigNumber(sharpeRatio)
+            Std: BigNumber(excessReturnStd)
         }
         
     }

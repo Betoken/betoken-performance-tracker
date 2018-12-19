@@ -16,6 +16,8 @@ import {
   loadStats
 } from "./betokenjs/data-controller.js";
 
+import BigNumber from "bignumber.js";
+
 https = require("https");
 
 callAPI = async function(apiStr) {
@@ -192,8 +194,8 @@ getROI = async function() {
         oneMonth: stats.cycle_roi(),
         sinceInception: stats.avg_roi()
       },
-      SharpeRatio: sharpeRatio,
-      Std: excessReturnStd
+      SharpeRatio: BigNumber(sharpeRatio),
+      Std: BigNumber(excessReturnStd)
     }
   };
   return result;
