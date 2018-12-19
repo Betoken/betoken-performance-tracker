@@ -53,7 +53,7 @@ loadData = async function() {
 };
 
 getROI = async function() {
-  var betokenROIList, btcROIList, ethROIList, i, j, now, phase, phaseLengths, phaseStart, rawROIs, ref, result, timestamps, x;
+  var betokenROIList, btcROIList, calcMean, calcSampleStd, ethROIList, excessReturnList, excessReturnStd, i, j, k, meanExcessReturn, now, phase, phaseLengths, phaseStart, rawROIs, ref, ref1, result, sharpeRatio, timestamps, x;
   await loadData();
   // get betoken ROI and time range
   phase = timer.phase();
@@ -108,6 +108,7 @@ getROI = async function() {
     betokenROIList[i].timestamp.end = betokenROIList[i + 1].timestamp.start - phaseLengths[0] - phaseLengths[2];
     betokenROIList[i].timestamp.start = betokenROIList[i].timestamp.end - phaseLengths[1];
   }
+  // get the ROI data of BTC & ETH during the same time periods
   btcROIList = [];
   ethROIList = [];
   await Promise.all([
@@ -138,6 +139,7 @@ getROI = async function() {
       return ethROIList = result;
     })
   ]);
+  // reformat data so that they're easier to use
   timestamps = (function() {
     var k, len, results;
     results = [];
@@ -156,6 +158,28 @@ getROI = async function() {
     }
     return results;
   })();
+  // calculate more stats for Betoken
+  calcMean = function(list) {
+    return list.reduce(function(accumulator, curr) {
+      return accumulator + curr;
+    }) / list.length;
+  };
+  calcSampleStd = function(list) {
+    var mean, sampleStd, sampleVar;
+    mean = calcMean(list);
+    sampleVar = list.reduce(function(accumulator, curr) {
+      return accumulator + Math.pow(curr - mean, 2);
+    }, 0) / (list.length - 1);
+    return sampleStd = Math.sqrt(sampleVar);
+  };
+  // Sharpe Ratio (against BTC, since inception)
+  meanExcessReturn = calcMean(betokenROIList) - calcMean(btcROIList);
+  excessReturnList = [];
+  for (i = k = 0, ref1 = betokenROIList.length - 1; (0 <= ref1 ? k <= ref1 : k >= ref1); i = 0 <= ref1 ? ++k : --k) {
+    excessReturnList[i] = betokenROIList[i] - btcROIList[i];
+  }
+  excessReturnStd = calcSampleStd(excessReturnList);
+  sharpeRatio = meanExcessReturn / excessReturnStd;
   result = {
     ROI: {
       betoken: betokenROIList,
@@ -163,8 +187,14 @@ getROI = async function() {
       eth: ethROIList
     },
     'timestamps': timestamps,
-    btk1MonthROI: stats.cycle_roi(),
-    btkInceptionROI: stats.avg_roi()
+    betokenStats: {
+      ROI: {
+        oneMonth: stats.cycle_roi(),
+        sinceInception: stats.avg_roi()
+      },
+      SharpeRatio: sharpeRatio,
+      Std: excessReturnStd
+    }
   };
   return result;
 };

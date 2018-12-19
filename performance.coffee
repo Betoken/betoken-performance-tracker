@@ -77,6 +77,8 @@ getROI = () ->
         betokenROIList[i].timestamp.end = betokenROIList[i+1].timestamp.start - phaseLengths[0] - phaseLengths[2]
         betokenROIList[i].timestamp.start = betokenROIList[i].timestamp.end - phaseLengths[1]
 
+
+    # get the ROI data of BTC & ETH during the same time periods
     btcROIList = []
     ethROIList = []
 
@@ -98,19 +100,47 @@ getROI = () ->
             ethROIList = result
         )
     ])
-    
+
+    # reformat data so that they're easier to use
     timestamps = (x.timestamp for x in betokenROIList)
     betokenROIList = (x.roi for x in betokenROIList)
+
+    # calculate more stats for Betoken
+    calcMean = (list) ->
+        return list.reduce((accumulator, curr) -> accumulator + curr) / list.length
+
+    calcSampleStd = (list) ->
+        mean = calcMean(list)
+        sampleVar = list.reduce(
+            (accumulator, curr) -> 
+                accumulator + Math.pow(curr - mean, 2)
+            , 0) / (list.length - 1)
+        sampleStd = Math.sqrt(sampleVar)
+
+    # Sharpe Ratio (against BTC, since inception)
+    meanExcessReturn = calcMean(betokenROIList) - calcMean(btcROIList)
+    excessReturnList = []
+    for i in [0..betokenROIList.length-1]
+        excessReturnList[i] = betokenROIList[i] - btcROIList[i]
+    excessReturnStd = calcSampleStd(excessReturnList)
+    sharpeRatio = meanExcessReturn / excessReturnStd
 
     result = {
         ROI: {
             betoken: betokenROIList
             btc: btcROIList
             eth: ethROIList
-        },
-        'timestamps': timestamps,
-        btk1MonthROI: stats.cycle_roi()
-        btkInceptionROI: stats.avg_roi()
+        }
+        'timestamps': timestamps
+        betokenStats: {
+            ROI: {
+                oneMonth: stats.cycle_roi()
+                sinceInception: stats.avg_roi()
+            }
+            SharpeRatio: sharpeRatio
+            Std: excessReturnStd
+        }
+        
     }
 
     return result

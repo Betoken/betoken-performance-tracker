@@ -44261,7 +44261,7 @@ function () {
   var _ref4 = (0, _asyncToGenerator2.default)(
   /*#__PURE__*/
   _regenerator.default.mark(function _callee6() {
-    var betokenROIList, btcROIList, ethROIList, i, j, now, phase, phaseLengths, phaseStart, rawROIs, ref, result, timestamps, x;
+    var betokenROIList, btcROIList, calcMean, calcSampleStd, ethROIList, excessReturnList, excessReturnStd, i, j, k, meanExcessReturn, now, phase, phaseLengths, phaseStart, rawROIs, ref, ref1, result, sharpeRatio, timestamps, x;
     return _regenerator.default.wrap(function _callee6$(_context6) {
       while (1) {
         switch (_context6.prev = _context6.next) {
@@ -44332,7 +44332,8 @@ function () {
             for (i = j = ref = betokenROIList.length - 2; ref <= 0 ? j <= 0 : j >= 0; i = ref <= 0 ? ++j : --j) {
               betokenROIList[i].timestamp.end = betokenROIList[i + 1].timestamp.start - phaseLengths[0] - phaseLengths[2];
               betokenROIList[i].timestamp.start = betokenROIList[i].timestamp.end - phaseLengths[1];
-            }
+            } // get the ROI data of BTC & ETH during the same time periods
+
 
             btcROIList = [];
             ethROIList = [];
@@ -44414,6 +44415,7 @@ function () {
             })]);
 
           case 22:
+            // reformat data so that they're easier to use
             timestamps = function () {
               var k, len, results;
               results = [];
@@ -44436,8 +44438,34 @@ function () {
               }
 
               return results;
-            }();
+            }(); // calculate more stats for Betoken
 
+
+            calcMean = function calcMean(list) {
+              return list.reduce(function (accumulator, curr) {
+                return accumulator + curr;
+              }) / list.length;
+            };
+
+            calcSampleStd = function calcSampleStd(list) {
+              var mean, sampleStd, sampleVar;
+              mean = calcMean(list);
+              sampleVar = list.reduce(function (accumulator, curr) {
+                return accumulator + Math.pow(curr - mean, 2);
+              }, 0) / (list.length - 1);
+              return sampleStd = Math.sqrt(sampleVar);
+            }; // Sharpe Ratio (against BTC, since inception)
+
+
+            meanExcessReturn = calcMean(betokenROIList) - calcMean(btcROIList);
+            excessReturnList = [];
+
+            for (i = k = 0, ref1 = betokenROIList.length - 1; 0 <= ref1 ? k <= ref1 : k >= ref1; i = 0 <= ref1 ? ++k : --k) {
+              excessReturnList[i] = betokenROIList[i] - btcROIList[i];
+            }
+
+            excessReturnStd = calcSampleStd(excessReturnList);
+            sharpeRatio = meanExcessReturn / excessReturnStd;
             result = {
               ROI: {
                 betoken: betokenROIList,
@@ -44445,12 +44473,18 @@ function () {
                 eth: ethROIList
               },
               'timestamps': timestamps,
-              btk1MonthROI: _helpers.stats.cycle_roi(),
-              btkInceptionROI: _helpers.stats.avg_roi()
+              betokenStats: {
+                ROI: {
+                  oneMonth: _helpers.stats.cycle_roi(),
+                  sinceInception: _helpers.stats.avg_roi()
+                },
+                SharpeRatio: sharpeRatio,
+                Std: excessReturnStd
+              }
             };
             return _context6.abrupt("return", result);
 
-          case 26:
+          case 33:
           case "end":
             return _context6.stop();
         }
