@@ -4,6 +4,8 @@ import { loadMetadata, loadTokenPrices, loadStats } from "./betokenjs/data-contr
 import BigNumber from "bignumber.js"
 https = require "https"
 
+BONDS_MONTHLY_INTEREST = 2.4662697e-3 # 3% annual interest rate
+
 callAPI = (apiStr) ->
     return (await (new Promise((resolve, reject) ->
         https.get(apiStr, (res) ->
@@ -119,10 +121,10 @@ getROI = () ->
         sampleStd = Math.sqrt(sampleVar)
 
     # Sharpe Ratio (against BTC, since inception)
-    meanExcessReturn = calcMean(betokenROIList) - calcMean(btcROIList)
+    meanExcessReturn = calcMean(betokenROIList) - BONDS_MONTHLY_INTEREST
     excessReturnList = []
     for i in [0..betokenROIList.length-1]
-        excessReturnList[i] = betokenROIList[i] - btcROIList[i]
+        excessReturnList[i] = betokenROIList[i] - BONDS_MONTHLY_INTEREST
     excessReturnStd = calcSampleStd(excessReturnList)
     sharpeRatio = meanExcessReturn / excessReturnStd
 
@@ -139,7 +141,7 @@ getROI = () ->
                 sinceInception: stats.avg_roi()
             }
             SharpeRatio: BigNumber(sharpeRatio)
-            Std: BigNumber(excessReturnStd)
+            Std: BigNumber(calcSampleStd(betokenROIList))
         }
         
     }
