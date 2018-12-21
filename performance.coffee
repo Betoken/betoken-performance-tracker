@@ -5,6 +5,7 @@ import BigNumber from "bignumber.js"
 https = require "https"
 
 BONDS_MONTHLY_INTEREST = 2.4662697e-3 # 3% annual interest rate
+NUM_DECIMALS = 4
 
 callAPI = (apiStr) ->
     return (await (new Promise((resolve, reject) ->
@@ -48,13 +49,13 @@ getROI = () ->
     phaseStart = timer.phase_start_time()
     phaseLengths = timer.phase_lengths()
 
-    betokenROIList = ({roi: rawROIs[i][1], timestamp: {start: 0, end: 0}} for i in [0..rawROIs.length-1])
+    betokenROIList = ({roi: +BigNumber(rawROIs[i][1]).toFixed(NUM_DECIMALS), timestamp: {start: 0, end: 0}} for i in [0..rawROIs.length-1])
     switch phase
         when 0
             # invest & withdraw phase
             # use last cycle's data
-            betokenROI[betokenROI.length - 1].timestamp.end = phaseStart - phaseLengths[2]
-            betokenROI[betokenROI.length - 1].timestamp.start = endTimestamp - phaseLengths[1]
+            betokenROIList[betokenROI.length - 1].timestamp.end = phaseStart - phaseLengths[2]
+            betokenROIList[betokenROI.length - 1].timestamp.start = endTimestamp - phaseLengths[1]
         when 1
             # manage phase
             # use current data
@@ -75,6 +76,7 @@ getROI = () ->
                     end: phaseStart
                 }
             })
+    betokenROIList[betokenROIList.length - 1].roi = +BigNumber(betokenROIList[betokenROIList.length - 1].roi).toFixed(NUM_DECIMALS)
 
     for i in [betokenROIList.length-2..0]
         betokenROIList[i].timestamp.end = betokenROIList[i+1].timestamp.start - phaseLengths[0] - phaseLengths[2]
@@ -89,7 +91,7 @@ getROI = () ->
         Promise.all(betokenROIList.map((x) ->
             btcStartPrice = await getCoinPriceAtTime("BTC", x.timestamp.start)
             btcEndPrice = await getCoinPriceAtTime("BTC", x.timestamp.end)
-            btcROI = (btcEndPrice - btcStartPrice) / btcStartPrice * 100
+            btcROI = +BigNumber((btcEndPrice - btcStartPrice) / btcStartPrice * 100).toFixed(NUM_DECIMALS)
             return btcROI
         )).then((result) ->
             btcROIList = result
@@ -97,7 +99,7 @@ getROI = () ->
         Promise.all(betokenROIList.map((x) ->
             ethStartPrice = await getCoinPriceAtTime("ETH", x.timestamp.start)
             ethEndPrice = await getCoinPriceAtTime("ETH", x.timestamp.end)
-            ethROI = (ethEndPrice - ethStartPrice) / ethStartPrice * 100
+            ethROI = +BigNumber((ethEndPrice - ethStartPrice) / ethStartPrice * 100).toFixed(NUM_DECIMALS)
             return ethROI
         )).then((result) ->
             ethROIList = result

@@ -11,7 +11,7 @@ $(document).ready(() => {
 
         var timestamps = [];
         for (var i = 0; i < result.timestamps.length; i++) {
-            timestamps.push(new Date(result.timestamps[i].start * 1e3).toLocaleDateString() + ' to ' + new Date(result.timestamps[i].end * 1e3).toLocaleDateString());
+            timestamps.push(new Date(result.timestamps[i].start * 1e3).toLocaleDateString() + '\n to ' + new Date(result.timestamps[i].end * 1e3).toLocaleDateString());
         }
         var xLabels = [];
         for (var i = 0; i < result.timestamps.length; i++) {
