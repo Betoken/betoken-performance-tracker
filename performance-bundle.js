@@ -44284,7 +44284,7 @@ function () {
 
               for (i = j = 0, ref = rawROIs.length - 1; 0 <= ref ? j <= ref : j >= ref; i = 0 <= ref ? ++j : --j) {
                 results.push({
-                  roi: +(0, _bignumber.default)(rawROIs[i][1]).toFixed(NUM_DECIMALS),
+                  roi: (0, _bignumber.default)(rawROIs[i][1]).dp(NUM_DECIMALS),
                   timestamp: {
                     start: 0,
                     end: 0
@@ -44330,7 +44330,7 @@ function () {
             });
 
           case 17:
-            betokenROIList[betokenROIList.length - 1].roi = +(0, _bignumber.default)(betokenROIList[betokenROIList.length - 1].roi).toFixed(NUM_DECIMALS);
+            betokenROIList[betokenROIList.length - 1].roi = (0, _bignumber.default)(betokenROIList[betokenROIList.length - 1].roi).dp(NUM_DECIMALS);
 
             for (i = j = ref = betokenROIList.length - 2; ref <= 0 ? j <= 0 : j >= 0; i = ref <= 0 ? ++j : --j) {
               betokenROIList[i].timestamp.end = betokenROIList[i + 1].timestamp.start - phaseLengths[0] - phaseLengths[2];
@@ -44362,7 +44362,7 @@ function () {
 
                       case 5:
                         btcEndPrice = _context4.sent;
-                        btcROI = +(0, _bignumber.default)((btcEndPrice - btcStartPrice) / btcStartPrice * 100).toFixed(NUM_DECIMALS);
+                        btcROI = (0, _bignumber.default)((btcEndPrice - btcStartPrice) / btcStartPrice * 100).dp(NUM_DECIMALS);
                         return _context4.abrupt("return", btcROI);
 
                       case 8:
@@ -44399,7 +44399,7 @@ function () {
 
                       case 5:
                         ethEndPrice = _context5.sent;
-                        ethROI = +(0, _bignumber.default)((ethEndPrice - ethStartPrice) / ethStartPrice * 100).toFixed(NUM_DECIMALS);
+                        ethROI = (0, _bignumber.default)((ethEndPrice - ethStartPrice) / ethStartPrice * 100).dp(NUM_DECIMALS);
                         return _context5.abrupt("return", ethROI);
 
                       case 8:
@@ -44446,29 +44446,29 @@ function () {
 
             calcMean = function calcMean(list) {
               return list.reduce(function (accumulator, curr) {
-                return accumulator + curr;
-              }) / list.length;
+                return (0, _bignumber.default)(accumulator).plus(curr);
+              }).div(list.length);
             };
 
             calcSampleStd = function calcSampleStd(list) {
               var mean, sampleStd, sampleVar;
               mean = calcMean(list);
               sampleVar = list.reduce(function (accumulator, curr) {
-                return accumulator + Math.pow(curr - mean, 2);
-              }, 0) / (list.length - 1);
-              return sampleStd = Math.sqrt(sampleVar);
+                return (0, _bignumber.default)(accumulator).plus((0, _bignumber.default)(curr - mean).pow(2));
+              }, 0).div(list.length - 1);
+              return sampleStd = sampleVar.sqrt();
             }; // Sharpe Ratio (against BTC, since inception)
 
 
-            meanExcessReturn = calcMean(betokenROIList) - BONDS_MONTHLY_INTEREST;
+            meanExcessReturn = calcMean(betokenROIList).minus(BONDS_MONTHLY_INTEREST);
             excessReturnList = [];
 
             for (i = k = 0, ref1 = betokenROIList.length - 1; 0 <= ref1 ? k <= ref1 : k >= ref1; i = 0 <= ref1 ? ++k : --k) {
-              excessReturnList[i] = betokenROIList[i] - BONDS_MONTHLY_INTEREST;
+              excessReturnList[i] = betokenROIList[i].minus(BONDS_MONTHLY_INTEREST);
             }
 
             excessReturnStd = calcSampleStd(excessReturnList);
-            sharpeRatio = meanExcessReturn / excessReturnStd;
+            sharpeRatio = meanExcessReturn.div(excessReturnStd);
             result = {
               ROI: {
                 betoken: betokenROIList,
@@ -44481,8 +44481,8 @@ function () {
                   oneMonth: _helpers.stats.cycle_roi(),
                   sinceInception: _helpers.stats.avg_roi()
                 },
-                SharpeRatio: (0, _bignumber.default)(sharpeRatio),
-                Std: (0, _bignumber.default)(calcSampleStd(betokenROIList))
+                SharpeRatio: sharpeRatio,
+                Std: calcSampleStd(betokenROIList)
               }
             };
             return _context6.abrupt("return", result);

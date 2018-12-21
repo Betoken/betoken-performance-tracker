@@ -49,7 +49,7 @@ getROI = () ->
     phaseStart = timer.phase_start_time()
     phaseLengths = timer.phase_lengths()
 
-    betokenROIList = ({roi: +BigNumber(rawROIs[i][1]).toFixed(NUM_DECIMALS), timestamp: {start: 0, end: 0}} for i in [0..rawROIs.length-1])
+    betokenROIList = ({roi: BigNumber(rawROIs[i][1]).dp(NUM_DECIMALS), timestamp: {start: 0, end: 0}} for i in [0..rawROIs.length-1])
     switch phase
         when 0
             # invest & withdraw phase
@@ -76,7 +76,7 @@ getROI = () ->
                     end: phaseStart
                 }
             })
-    betokenROIList[betokenROIList.length - 1].roi = +BigNumber(betokenROIList[betokenROIList.length - 1].roi).toFixed(NUM_DECIMALS)
+    betokenROIList[betokenROIList.length - 1].roi = BigNumber(betokenROIList[betokenROIList.length - 1].roi).dp(NUM_DECIMALS)
 
     for i in [betokenROIList.length-2..0]
         betokenROIList[i].timestamp.end = betokenROIList[i+1].timestamp.start - phaseLengths[0] - phaseLengths[2]
@@ -91,7 +91,7 @@ getROI = () ->
         Promise.all(betokenROIList.map((x) ->
             btcStartPrice = await getCoinPriceAtTime("BTC", x.timestamp.start)
             btcEndPrice = await getCoinPriceAtTime("BTC", x.timestamp.end)
-            btcROI = +BigNumber((btcEndPrice - btcStartPrice) / btcStartPrice * 100).toFixed(NUM_DECIMALS)
+            btcROI = BigNumber((btcEndPrice - btcStartPrice) / btcStartPrice * 100).dp(NUM_DECIMALS)
             return btcROI
         )).then((result) ->
             btcROIList = result
@@ -99,7 +99,7 @@ getROI = () ->
         Promise.all(betokenROIList.map((x) ->
             ethStartPrice = await getCoinPriceAtTime("ETH", x.timestamp.start)
             ethEndPrice = await getCoinPriceAtTime("ETH", x.timestamp.end)
-            ethROI = +BigNumber((ethEndPrice - ethStartPrice) / ethStartPrice * 100).toFixed(NUM_DECIMALS)
+            ethROI = BigNumber((ethEndPrice - ethStartPrice) / ethStartPrice * 100).dp(NUM_DECIMALS)
             return ethROI
         )).then((result) ->
             ethROIList = result
@@ -112,23 +112,23 @@ getROI = () ->
 
     # calculate more stats for Betoken
     calcMean = (list) ->
-        return list.reduce((accumulator, curr) -> accumulator + curr) / list.length
+        return list.reduce((accumulator, curr) -> BigNumber(accumulator).plus(curr)).div(list.length)
 
     calcSampleStd = (list) ->
         mean = calcMean(list)
         sampleVar = list.reduce(
             (accumulator, curr) -> 
-                accumulator + Math.pow(curr - mean, 2)
-            , 0) / (list.length - 1)
-        sampleStd = Math.sqrt(sampleVar)
+                BigNumber(accumulator).plus(BigNumber(curr - mean).pow(2))
+            , 0).div(list.length - 1)
+        sampleStd = sampleVar.sqrt()
 
     # Sharpe Ratio (against BTC, since inception)
-    meanExcessReturn = calcMean(betokenROIList) - BONDS_MONTHLY_INTEREST
+    meanExcessReturn = calcMean(betokenROIList).minus(BONDS_MONTHLY_INTEREST)
     excessReturnList = []
     for i in [0..betokenROIList.length-1]
-        excessReturnList[i] = betokenROIList[i] - BONDS_MONTHLY_INTEREST
+        excessReturnList[i] = betokenROIList[i].minus(BONDS_MONTHLY_INTEREST)
     excessReturnStd = calcSampleStd(excessReturnList)
-    sharpeRatio = meanExcessReturn / excessReturnStd
+    sharpeRatio = meanExcessReturn.div(excessReturnStd)
 
     result = {
         ROI: {
@@ -142,10 +142,9 @@ getROI = () ->
                 oneMonth: stats.cycle_roi()
                 sinceInception: stats.avg_roi()
             }
-            SharpeRatio: BigNumber(sharpeRatio)
-            Std: BigNumber(calcSampleStd(betokenROIList))
+            SharpeRatio: sharpeRatio
+            Std: calcSampleStd(betokenROIList)
         }
-        
     }
 
     return result

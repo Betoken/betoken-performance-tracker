@@ -4,10 +4,11 @@ $(document).ready(() => {
     });
     window.getROI().then((result) => {
         // 4 decimals
-        $(".1-month-roi").text(`${result.betokenStats.ROI.oneMonth.toFormat(4)}`);
-        $(".inception-roi").text(`${result.betokenStats.ROI.sinceInception.toFormat(4)}`);
-        $(".sharpe-ratio").text(`${result.betokenStats.SharpeRatio.toFormat(4)}`);
-        $(".std").text(`${result.betokenStats.Std.toFormat(4)}`);
+        let NUM_DECIMALS = 4;
+        $(".1-month-roi").text(`${result.betokenStats.ROI.oneMonth.toFormat(NUM_DECIMALS)}`);
+        $(".inception-roi").text(`${result.betokenStats.ROI.sinceInception.toFormat(NUM_DECIMALS)}`);
+        $(".sharpe-ratio").text(`${result.betokenStats.SharpeRatio.toFormat(NUM_DECIMALS)}`);
+        $(".std").text(`${result.betokenStats.Std.toFormat(NUM_DECIMALS)}`);
 
         var timestamps = [];
         for (var i = 0; i < result.timestamps.length; i++) {

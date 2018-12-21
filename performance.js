@@ -72,7 +72,7 @@ getROI = async function() {
     results = [];
     for (i = j = 0, ref = rawROIs.length - 1; (0 <= ref ? j <= ref : j >= ref); i = 0 <= ref ? ++j : --j) {
       results.push({
-        roi: +BigNumber(rawROIs[i][1]).toFixed(NUM_DECIMALS),
+        roi: BigNumber(rawROIs[i][1]).dp(NUM_DECIMALS),
         timestamp: {
           start: 0,
           end: 0
@@ -110,7 +110,7 @@ getROI = async function() {
         }
       });
   }
-  betokenROIList[betokenROIList.length - 1].roi = +BigNumber(betokenROIList[betokenROIList.length - 1].roi).toFixed(NUM_DECIMALS);
+  betokenROIList[betokenROIList.length - 1].roi = BigNumber(betokenROIList[betokenROIList.length - 1].roi).dp(NUM_DECIMALS);
   for (i = j = ref = betokenROIList.length - 2; (ref <= 0 ? j <= 0 : j >= 0); i = ref <= 0 ? ++j : --j) {
     betokenROIList[i].timestamp.end = betokenROIList[i + 1].timestamp.start - phaseLengths[0] - phaseLengths[2];
     betokenROIList[i].timestamp.start = betokenROIList[i].timestamp.end - phaseLengths[1];
@@ -127,7 +127,7 @@ getROI = async function() {
     x.timestamp.start));
       btcEndPrice = (await getCoinPriceAtTime("BTC",
     x.timestamp.end));
-      btcROI = +BigNumber((btcEndPrice - btcStartPrice) / btcStartPrice * 100).toFixed(NUM_DECIMALS);
+      btcROI = BigNumber((btcEndPrice - btcStartPrice) / btcStartPrice * 100).dp(NUM_DECIMALS);
       return btcROI;
     })).then(function(result) {
       return btcROIList = result;
@@ -140,7 +140,7 @@ getROI = async function() {
     x.timestamp.start));
       ethEndPrice = (await getCoinPriceAtTime("ETH",
     x.timestamp.end));
-      ethROI = +BigNumber((ethEndPrice - ethStartPrice) / ethStartPrice * 100).toFixed(NUM_DECIMALS);
+      ethROI = BigNumber((ethEndPrice - ethStartPrice) / ethStartPrice * 100).dp(NUM_DECIMALS);
       return ethROI;
     })).then(function(result) {
       return ethROIList = result;
@@ -168,25 +168,25 @@ getROI = async function() {
   // calculate more stats for Betoken
   calcMean = function(list) {
     return list.reduce(function(accumulator, curr) {
-      return accumulator + curr;
-    }) / list.length;
+      return BigNumber(accumulator).plus(curr);
+    }).div(list.length);
   };
   calcSampleStd = function(list) {
     var mean, sampleStd, sampleVar;
     mean = calcMean(list);
     sampleVar = list.reduce(function(accumulator, curr) {
-      return accumulator + Math.pow(curr - mean, 2);
-    }, 0) / (list.length - 1);
-    return sampleStd = Math.sqrt(sampleVar);
+      return BigNumber(accumulator).plus(BigNumber(curr - mean).pow(2));
+    }, 0).div(list.length - 1);
+    return sampleStd = sampleVar.sqrt();
   };
   // Sharpe Ratio (against BTC, since inception)
-  meanExcessReturn = calcMean(betokenROIList) - BONDS_MONTHLY_INTEREST;
+  meanExcessReturn = calcMean(betokenROIList).minus(BONDS_MONTHLY_INTEREST);
   excessReturnList = [];
   for (i = k = 0, ref1 = betokenROIList.length - 1; (0 <= ref1 ? k <= ref1 : k >= ref1); i = 0 <= ref1 ? ++k : --k) {
-    excessReturnList[i] = betokenROIList[i] - BONDS_MONTHLY_INTEREST;
+    excessReturnList[i] = betokenROIList[i].minus(BONDS_MONTHLY_INTEREST);
   }
   excessReturnStd = calcSampleStd(excessReturnList);
-  sharpeRatio = meanExcessReturn / excessReturnStd;
+  sharpeRatio = meanExcessReturn.div(excessReturnStd);
   result = {
     ROI: {
       betoken: betokenROIList,
@@ -199,8 +199,8 @@ getROI = async function() {
         oneMonth: stats.cycle_roi(),
         sinceInception: stats.avg_roi()
       },
-      SharpeRatio: BigNumber(sharpeRatio),
-      Std: BigNumber(calcSampleStd(betokenROIList))
+      SharpeRatio: sharpeRatio,
+      Std: calcSampleStd(betokenROIList)
     }
   };
   return result;
