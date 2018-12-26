@@ -86,7 +86,7 @@ getROI = async function() {
       // invest & withdraw phase
       // use last cycle's data
       betokenROIList[betokenROIList.length - 1].timestamp.end = phaseStart - phaseLengths[2];
-      betokenROIList[betokenROIList.length - 1].timestamp.start = endTimestamp - phaseLengths[1];
+      betokenROIList[betokenROIList.length - 1].timestamp.start = phaseStart - phaseLengths[2] - phaseLengths[1];
       break;
     case 1:
       // manage phase
