@@ -54,8 +54,8 @@ getROI = () ->
         when 0
             # invest & withdraw phase
             # use last cycle's data
-            betokenROIList[betokenROI.length - 1].timestamp.end = phaseStart - phaseLengths[2]
-            betokenROIList[betokenROI.length - 1].timestamp.start = endTimestamp - phaseLengths[1]
+            betokenROIList[betokenROIList.length - 1].timestamp.end = phaseStart - phaseLengths[2]
+            betokenROIList[betokenROIList.length - 1].timestamp.start = endTimestamp - phaseLengths[1]
         when 1
             # manage phase
             # use current data
@@ -69,13 +69,9 @@ getROI = () ->
         when 2
             # redeem commission phase
             # use data from manage phase
-            betokenROIList.push({
-                roi: stats.cycle_roi().toNumber()
-                timestamp: {
-                    start: phaseStart - phaseLengths[1]
-                    end: phaseStart
-                }
-            })
+            betokenROIList[betokenROIList.length - 1].timestamp.start = phaseStart - phaseLengths[1]
+            betokenROIList[betokenROIList.length - 1].timestamp.end = phaseStart
+
     betokenROIList[betokenROIList.length - 1].roi = BigNumber(betokenROIList[betokenROIList.length - 1].roi).dp(NUM_DECIMALS)
 
     for i in [betokenROIList.length-2..0]
@@ -139,7 +135,7 @@ getROI = () ->
         'timestamps': timestamps
         betokenStats: {
             ROI: {
-                oneMonth: stats.cycle_roi()
+                oneMonth: betokenROIList[betokenROIList.length - 1]
                 sinceInception: stats.avg_roi()
             }
             SharpeRatio: sharpeRatio

@@ -44296,15 +44296,15 @@ function () {
             }();
 
             _context6.t0 = phase;
-            _context6.next = _context6.t0 === 0 ? 11 : _context6.t0 === 1 ? 14 : _context6.t0 === 2 ? 16 : 17;
+            _context6.next = _context6.t0 === 0 ? 11 : _context6.t0 === 1 ? 14 : _context6.t0 === 2 ? 16 : 18;
             break;
 
           case 11:
             // invest & withdraw phase
             // use last cycle's data
-            betokenROIList[betokenROI.length - 1].timestamp.end = phaseStart - phaseLengths[2];
-            betokenROIList[betokenROI.length - 1].timestamp.start = endTimestamp - phaseLengths[1];
-            return _context6.abrupt("break", 17);
+            betokenROIList[betokenROIList.length - 1].timestamp.end = phaseStart - phaseLengths[2];
+            betokenROIList[betokenROIList.length - 1].timestamp.start = endTimestamp - phaseLengths[1];
+            return _context6.abrupt("break", 18);
 
           case 14:
             // manage phase
@@ -44316,20 +44316,15 @@ function () {
                 end: now
               }
             });
-            return _context6.abrupt("break", 17);
+            return _context6.abrupt("break", 18);
 
           case 16:
             // redeem commission phase
             // use data from manage phase
-            betokenROIList.push({
-              roi: _helpers.stats.cycle_roi().toNumber(),
-              timestamp: {
-                start: phaseStart - phaseLengths[1],
-                end: phaseStart
-              }
-            });
+            betokenROIList[betokenROIList.length - 1].timestamp.start = phaseStart - phaseLengths[1];
+            betokenROIList[betokenROIList.length - 1].timestamp.end = phaseStart;
 
-          case 17:
+          case 18:
             betokenROIList[betokenROIList.length - 1].roi = (0, _bignumber.default)(betokenROIList[betokenROIList.length - 1].roi).dp(NUM_DECIMALS);
 
             for (i = j = ref = betokenROIList.length - 2; ref <= 0 ? j <= 0 : j >= 0; i = ref <= 0 ? ++j : --j) {
@@ -44340,7 +44335,7 @@ function () {
 
             btcROIList = [];
             ethROIList = [];
-            _context6.next = 23;
+            _context6.next = 24;
             return Promise.all([Promise.all(betokenROIList.map(
             /*#__PURE__*/
             function () {
@@ -44417,7 +44412,7 @@ function () {
               return ethROIList = result;
             })]);
 
-          case 23:
+          case 24:
             // reformat data so that they're easier to use
             timestamps = function () {
               var k, len, results;
@@ -44478,7 +44473,7 @@ function () {
               'timestamps': timestamps,
               betokenStats: {
                 ROI: {
-                  oneMonth: _helpers.stats.cycle_roi(),
+                  oneMonth: betokenROIList[betokenROIList.length - 1],
                   sinceInception: _helpers.stats.avg_roi()
                 },
                 SharpeRatio: sharpeRatio,
@@ -44487,7 +44482,7 @@ function () {
             };
             return _context6.abrupt("return", result);
 
-          case 34:
+          case 35:
           case "end":
             return _context6.stop();
         }

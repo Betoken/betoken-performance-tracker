@@ -27,7 +27,7 @@ $(document).ready(() => {
                     {
                         label: 'Betoken',
                         borderColor: '#22c88a',
-                        backgroundColor: '#B9EEE1',
+                        backgroundColor: 'rgba(185, 238, 225, 0.5)',
                         fill: true,
                         data: result.ROI.betoken
                     },
