@@ -44262,7 +44262,7 @@ function () {
   var _ref4 = (0, _asyncToGenerator2.default)(
   /*#__PURE__*/
   _regenerator.default.mark(function _callee6() {
-    var betokenROIList, btcROIList, calcDownsideStd, calcMean, calcSampleStd, ethROIList, excessReturnDownsideStd, i, j, meanExcessReturn, now, phase, phaseLengths, phaseStart, rawROIs, ref, result, sortinoRatio, timestamps, x;
+    var betokenROIList, btcROIList, calcDownsideStd, calcMean, calcSampleStd, convertToCumulative, ethROIList, excessReturnDownsideStd, i, j, meanExcessReturn, now, oneMonthROI, phase, phaseLengths, phaseStart, rawROIs, ref, result, sortinoRatio, timestamps, x;
     return _regenerator.default.wrap(function _callee6$(_context6) {
       while (1) {
         switch (_context6.prev = _context6.next) {
@@ -44436,8 +44436,9 @@ function () {
               }
 
               return results;
-            }(); // calculate more stats for Betoken
+            }();
 
+            oneMonthROI = betokenROIList[betokenROIList.length - 1]; // calculate more stats for Betoken
 
             calcMean = function calcMean(list) {
               return list.reduce(function (accumulator, curr) {
@@ -44468,6 +44469,24 @@ function () {
             meanExcessReturn = calcMean(betokenROIList).minus(BONDS_MONTHLY_INTEREST);
             excessReturnDownsideStd = calcDownsideStd(betokenROIList, BONDS_MONTHLY_INTEREST);
             sortinoRatio = meanExcessReturn.div(excessReturnDownsideStd);
+
+            convertToCumulative = function convertToCumulative(list) {
+              var k, len, roi, tmp, tmpArray;
+              tmp = (0, _bignumber.default)(1);
+              tmpArray = [(0, _bignumber.default)(0)];
+
+              for (k = 0, len = list.length; k < len; k++) {
+                roi = list[k];
+                tmp = roi.div(100).plus(1).times(tmp);
+                tmpArray.push(tmp.times(100).minus(100));
+              }
+
+              return tmpArray;
+            };
+
+            betokenROIList = convertToCumulative(betokenROIList);
+            btcROIList = convertToCumulative(btcROIList);
+            ethROIList = convertToCumulative(ethROIList);
             result = {
               ROI: {
                 betoken: betokenROIList,
@@ -44477,8 +44496,8 @@ function () {
               'timestamps': timestamps,
               betokenStats: {
                 ROI: {
-                  oneMonth: betokenROIList[betokenROIList.length - 1],
-                  sinceInception: _helpers.stats.avg_roi()
+                  oneMonth: oneMonthROI,
+                  sinceInception: betokenROIList[betokenROIList.length - 1]
                 },
                 SortinoRatio: sortinoRatio,
                 Std: calcSampleStd(betokenROIList)
@@ -44486,7 +44505,7 @@ function () {
             };
             return _context6.abrupt("return", result);
 
-          case 34:
+          case 39:
           case "end":
             return _context6.stop();
         }

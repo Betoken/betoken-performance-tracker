@@ -105,6 +105,7 @@ getROI = () ->
     # reformat data so that they're easier to use
     timestamps = (x.timestamp for x in betokenROIList)
     betokenROIList = (x.roi for x in betokenROIList)
+    oneMonthROI = betokenROIList[betokenROIList.length - 1]
 
     # calculate more stats for Betoken
     calcMean = (list) ->
@@ -132,6 +133,18 @@ getROI = () ->
     excessReturnDownsideStd = calcDownsideStd(betokenROIList, BONDS_MONTHLY_INTEREST)
     sortinoRatio = meanExcessReturn.div(excessReturnDownsideStd)
 
+    convertToCumulative = (list) ->
+        tmp = BigNumber(1)
+        tmpArray = [BigNumber(0)]
+        for roi in list
+            tmp = roi.div(100).plus(1).times(tmp)
+            tmpArray.push(tmp.times(100).minus(100))
+        return tmpArray
+    
+    betokenROIList = convertToCumulative(betokenROIList)
+    btcROIList = convertToCumulative(btcROIList)
+    ethROIList = convertToCumulative(ethROIList)
+
     result = {
         ROI: {
             betoken: betokenROIList
@@ -141,8 +154,8 @@ getROI = () ->
         'timestamps': timestamps
         betokenStats: {
             ROI: {
-                oneMonth: betokenROIList[betokenROIList.length - 1]
-                sinceInception: stats.avg_roi()
+                oneMonth: oneMonthROI
+                sinceInception: betokenROIList[betokenROIList.length - 1]
             }
             SortinoRatio: sortinoRatio
             Std: calcSampleStd(betokenROIList)

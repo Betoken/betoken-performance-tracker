@@ -3,8 +3,9 @@ $(document).ready(() => {
         background: "rgba(255, 255, 255, 0)"
     });
     window.getROI().then((result) => {
-        // 4 decimals
-        let NUM_DECIMALS = 4;
+        let NUM_DECIMALS = 4; // 4 decimals for stats
+        let MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
         $(".1-month-roi").text(`${result.betokenStats.ROI.oneMonth.toFormat(NUM_DECIMALS)}`);
         $(".inception-roi").text(`${result.betokenStats.ROI.sinceInception.toFormat(NUM_DECIMALS)}`);
         $(".sortino-ratio").text(`${result.betokenStats.SortinoRatio.toFormat(NUM_DECIMALS)}`);
@@ -12,12 +13,18 @@ $(document).ready(() => {
 
         var timestamps = [];
         for (var i = 0; i < result.timestamps.length; i++) {
-            timestamps.push(new Date(result.timestamps[i].start * 1e3).toLocaleDateString() + '\n to ' + new Date(result.timestamps[i].end * 1e3).toLocaleDateString());
+            timestamps.push(new Date(result.timestamps[i].start * 1e3).toLocaleDateString());
         }
+        timestamps.push(new Date(result.timestamps[result.timestamps.length - 1].end * 1e3).toLocaleDateString());
+
         var xLabels = [];
         for (var i = 0; i < result.timestamps.length; i++) {
-            xLabels.push(new Date(result.timestamps[i].start * 1e3).toLocaleDateString());
+            var date = new Date(result.timestamps[i].start * 1e3);
+            var formattedString = `${MONTHS[date.getMonth()]} ${date.getFullYear()}`;
+            xLabels.push(formattedString);
         }
+        xLabels.push("Now");
+
         var ctx = document.getElementById("performance-chart").getContext('2d');
         var performanceChart = new Chart(ctx, {
             type: 'line',

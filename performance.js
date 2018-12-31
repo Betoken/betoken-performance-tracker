@@ -59,7 +59,7 @@ loadData = async function() {
 };
 
 getROI = async function() {
-  var betokenROIList, btcROIList, calcDownsideStd, calcMean, calcSampleStd, ethROIList, excessReturnDownsideStd, i, j, meanExcessReturn, now, phase, phaseLengths, phaseStart, rawROIs, ref, result, sortinoRatio, timestamps, x;
+  var betokenROIList, btcROIList, calcDownsideStd, calcMean, calcSampleStd, convertToCumulative, ethROIList, excessReturnDownsideStd, i, j, meanExcessReturn, now, oneMonthROI, phase, phaseLengths, phaseStart, rawROIs, ref, result, sortinoRatio, timestamps, x;
   await loadData();
   // get betoken ROI and time range
   phase = timer.phase();
@@ -160,6 +160,7 @@ getROI = async function() {
     }
     return results;
   })();
+  oneMonthROI = betokenROIList[betokenROIList.length - 1];
   // calculate more stats for Betoken
   calcMean = function(list) {
     return list.reduce(function(accumulator, curr) {
@@ -187,6 +188,20 @@ getROI = async function() {
   meanExcessReturn = calcMean(betokenROIList).minus(BONDS_MONTHLY_INTEREST);
   excessReturnDownsideStd = calcDownsideStd(betokenROIList, BONDS_MONTHLY_INTEREST);
   sortinoRatio = meanExcessReturn.div(excessReturnDownsideStd);
+  convertToCumulative = function(list) {
+    var k, len, roi, tmp, tmpArray;
+    tmp = BigNumber(1);
+    tmpArray = [BigNumber(0)];
+    for (k = 0, len = list.length; k < len; k++) {
+      roi = list[k];
+      tmp = roi.div(100).plus(1).times(tmp);
+      tmpArray.push(tmp.times(100).minus(100));
+    }
+    return tmpArray;
+  };
+  betokenROIList = convertToCumulative(betokenROIList);
+  btcROIList = convertToCumulative(btcROIList);
+  ethROIList = convertToCumulative(ethROIList);
   result = {
     ROI: {
       betoken: betokenROIList,
@@ -196,8 +211,8 @@ getROI = async function() {
     'timestamps': timestamps,
     betokenStats: {
       ROI: {
-        oneMonth: betokenROIList[betokenROIList.length - 1],
-        sinceInception: stats.avg_roi()
+        oneMonth: oneMonthROI,
+        sinceInception: betokenROIList[betokenROIList.length - 1]
       },
       SortinoRatio: sortinoRatio,
       Std: calcSampleStd(betokenROIList)
