@@ -117,14 +117,20 @@ getROI = () ->
                 BigNumber(accumulator).plus(BigNumber(curr - mean).pow(2))
             , 0).div(list.length - 1)
         sampleStd = sampleVar.sqrt()
+        return sampleStd
+
+    calcDownsideStd = (list, minAcceptableRate) ->
+        sampleVar = list.reduce(
+            (accumulator, curr) -> 
+                BigNumber(accumulator).plus(BigNumber(BigNumber.min(curr - minAcceptableRate, 0)).pow(2))
+            , 0).div(list.length - 1)
+        sampleStd = sampleVar.sqrt()
+        return sampleStd
 
     # Sharpe Ratio (against BTC, since inception)
     meanExcessReturn = calcMean(betokenROIList).minus(BONDS_MONTHLY_INTEREST)
-    excessReturnList = []
-    for i in [0..betokenROIList.length-1]
-        excessReturnList[i] = betokenROIList[i].minus(BONDS_MONTHLY_INTEREST)
-    excessReturnStd = calcSampleStd(excessReturnList)
-    sharpeRatio = meanExcessReturn.div(excessReturnStd)
+    excessReturnDownsideStd = calcDownsideStd(betokenROIList, BONDS_MONTHLY_INTEREST)
+    sortinoRatio = meanExcessReturn.div(excessReturnDownsideStd)
 
     result = {
         ROI: {
@@ -138,7 +144,7 @@ getROI = () ->
                 oneMonth: betokenROIList[betokenROIList.length - 1]
                 sinceInception: stats.avg_roi()
             }
-            SharpeRatio: sharpeRatio
+            SortinoRatio: sortinoRatio
             Std: calcSampleStd(betokenROIList)
         }
     }

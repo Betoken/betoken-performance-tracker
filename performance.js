@@ -59,7 +59,7 @@ loadData = async function() {
 };
 
 getROI = async function() {
-  var betokenROIList, btcROIList, calcMean, calcSampleStd, ethROIList, excessReturnList, excessReturnStd, i, j, k, meanExcessReturn, now, phase, phaseLengths, phaseStart, rawROIs, ref, ref1, result, sharpeRatio, timestamps, x;
+  var betokenROIList, btcROIList, calcDownsideStd, calcMean, calcSampleStd, ethROIList, excessReturnDownsideStd, i, j, meanExcessReturn, now, phase, phaseLengths, phaseStart, rawROIs, ref, result, sortinoRatio, timestamps, x;
   await loadData();
   // get betoken ROI and time range
   phase = timer.phase();
@@ -172,16 +172,21 @@ getROI = async function() {
     sampleVar = list.reduce(function(accumulator, curr) {
       return BigNumber(accumulator).plus(BigNumber(curr - mean).pow(2));
     }, 0).div(list.length - 1);
-    return sampleStd = sampleVar.sqrt();
+    sampleStd = sampleVar.sqrt();
+    return sampleStd;
+  };
+  calcDownsideStd = function(list, minAcceptableRate) {
+    var sampleStd, sampleVar;
+    sampleVar = list.reduce(function(accumulator, curr) {
+      return BigNumber(accumulator).plus(BigNumber(BigNumber.min(curr - minAcceptableRate, 0)).pow(2));
+    }, 0).div(list.length - 1);
+    sampleStd = sampleVar.sqrt();
+    return sampleStd;
   };
   // Sharpe Ratio (against BTC, since inception)
   meanExcessReturn = calcMean(betokenROIList).minus(BONDS_MONTHLY_INTEREST);
-  excessReturnList = [];
-  for (i = k = 0, ref1 = betokenROIList.length - 1; (0 <= ref1 ? k <= ref1 : k >= ref1); i = 0 <= ref1 ? ++k : --k) {
-    excessReturnList[i] = betokenROIList[i].minus(BONDS_MONTHLY_INTEREST);
-  }
-  excessReturnStd = calcSampleStd(excessReturnList);
-  sharpeRatio = meanExcessReturn.div(excessReturnStd);
+  excessReturnDownsideStd = calcDownsideStd(betokenROIList, BONDS_MONTHLY_INTEREST);
+  sortinoRatio = meanExcessReturn.div(excessReturnDownsideStd);
   result = {
     ROI: {
       betoken: betokenROIList,
@@ -194,7 +199,7 @@ getROI = async function() {
         oneMonth: betokenROIList[betokenROIList.length - 1],
         sinceInception: stats.avg_roi()
       },
-      SharpeRatio: sharpeRatio,
+      SortinoRatio: sortinoRatio,
       Std: calcSampleStd(betokenROIList)
     }
   };

@@ -44262,7 +44262,7 @@ function () {
   var _ref4 = (0, _asyncToGenerator2.default)(
   /*#__PURE__*/
   _regenerator.default.mark(function _callee6() {
-    var betokenROIList, btcROIList, calcMean, calcSampleStd, ethROIList, excessReturnList, excessReturnStd, i, j, k, meanExcessReturn, now, phase, phaseLengths, phaseStart, rawROIs, ref, ref1, result, sharpeRatio, timestamps, x;
+    var betokenROIList, btcROIList, calcDownsideStd, calcMean, calcSampleStd, ethROIList, excessReturnDownsideStd, i, j, meanExcessReturn, now, phase, phaseLengths, phaseStart, rawROIs, ref, result, sortinoRatio, timestamps, x;
     return _regenerator.default.wrap(function _callee6$(_context6) {
       while (1) {
         switch (_context6.prev = _context6.next) {
@@ -44451,19 +44451,23 @@ function () {
               sampleVar = list.reduce(function (accumulator, curr) {
                 return (0, _bignumber.default)(accumulator).plus((0, _bignumber.default)(curr - mean).pow(2));
               }, 0).div(list.length - 1);
-              return sampleStd = sampleVar.sqrt();
+              sampleStd = sampleVar.sqrt();
+              return sampleStd;
+            };
+
+            calcDownsideStd = function calcDownsideStd(list, minAcceptableRate) {
+              var sampleStd, sampleVar;
+              sampleVar = list.reduce(function (accumulator, curr) {
+                return (0, _bignumber.default)(accumulator).plus((0, _bignumber.default)(_bignumber.default.min(curr - minAcceptableRate, 0)).pow(2));
+              }, 0).div(list.length - 1);
+              sampleStd = sampleVar.sqrt();
+              return sampleStd;
             }; // Sharpe Ratio (against BTC, since inception)
 
 
             meanExcessReturn = calcMean(betokenROIList).minus(BONDS_MONTHLY_INTEREST);
-            excessReturnList = [];
-
-            for (i = k = 0, ref1 = betokenROIList.length - 1; 0 <= ref1 ? k <= ref1 : k >= ref1; i = 0 <= ref1 ? ++k : --k) {
-              excessReturnList[i] = betokenROIList[i].minus(BONDS_MONTHLY_INTEREST);
-            }
-
-            excessReturnStd = calcSampleStd(excessReturnList);
-            sharpeRatio = meanExcessReturn.div(excessReturnStd);
+            excessReturnDownsideStd = calcDownsideStd(betokenROIList, BONDS_MONTHLY_INTEREST);
+            sortinoRatio = meanExcessReturn.div(excessReturnDownsideStd);
             result = {
               ROI: {
                 betoken: betokenROIList,
@@ -44476,13 +44480,13 @@ function () {
                   oneMonth: betokenROIList[betokenROIList.length - 1],
                   sinceInception: _helpers.stats.avg_roi()
                 },
-                SharpeRatio: sharpeRatio,
+                SortinoRatio: sortinoRatio,
                 Std: calcSampleStd(betokenROIList)
               }
             };
             return _context6.abrupt("return", result);
 
-          case 35:
+          case 34:
           case "end":
             return _context6.stop();
         }

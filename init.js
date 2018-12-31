@@ -7,7 +7,7 @@ $(document).ready(() => {
         let NUM_DECIMALS = 4;
         $(".1-month-roi").text(`${result.betokenStats.ROI.oneMonth.toFormat(NUM_DECIMALS)}`);
         $(".inception-roi").text(`${result.betokenStats.ROI.sinceInception.toFormat(NUM_DECIMALS)}`);
-        $(".sharpe-ratio").text(`${result.betokenStats.SharpeRatio.toFormat(NUM_DECIMALS)}`);
+        $(".sortino-ratio").text(`${result.betokenStats.SortinoRatio.toFormat(NUM_DECIMALS)}`);
         $(".std").text(`${result.betokenStats.Std.toFormat(NUM_DECIMALS)}`);
 
         var timestamps = [];
