@@ -44190,17 +44190,16 @@ function () {
       while (1) {
         switch (_context2.prev = _context2.next) {
           case 0:
-            apiStr = "https://min-api.cryptocompare.com/data/pricehistorical?fsym=DAI&tsyms=".concat(coin, "&ts=").concat(time);
+            apiStr = "https://min-api.cryptocompare.com/data/pricehistorical?fsym=".concat(coin, "&tsyms=USD&ts=").concat(time);
             _context2.next = 3;
             return callAPI(apiStr);
 
           case 3:
             _context2.t0 = coin;
-            _context2.t1 = _context2.sent.DAI[_context2.t0];
-            price = 1 / _context2.t1;
+            price = _context2.sent[_context2.t0].USD;
             return _context2.abrupt("return", price);
 
-          case 7:
+          case 6:
           case "end":
             return _context2.stop();
         }

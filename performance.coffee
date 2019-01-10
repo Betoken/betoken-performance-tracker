@@ -23,8 +23,8 @@ callAPI = (apiStr) ->
 
 
 getCoinPriceAtTime = (coin, time) ->
-    apiStr = "https://min-api.cryptocompare.com/data/pricehistorical?fsym=DAI&tsyms=#{coin}&ts=#{time}"
-    price = 1 / (await callAPI(apiStr)).DAI[coin]
+    apiStr = "https://min-api.cryptocompare.com/data/pricehistorical?fsym=#{coin}&tsyms=USD&ts=#{time}"
+    price = (await callAPI(apiStr))[coin].USD
     return price
 
 
